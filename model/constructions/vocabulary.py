@@ -9,7 +9,7 @@ from dataclasses import dataclass
 
 @dataclass
 class Vocabulary:
-    num_words: int
+    num_constructions: int
     priors: List[float]
     priors_enabled: bool
 
@@ -17,11 +17,11 @@ class Vocabulary:
     # display_names: List[str]
 
     def __post_init__(self):
-        self.word_indices: List[int] = list(range(0, self.num_words))
+        self.word_indices: List[int] = list(range(0, self.num_constructions))
         self.words: List[str] = [str(word_index) for word_index in self.word_indices]
 
         self.frequency: np.ndarray = np.zeros(
-            (self.num_words, len(model.enums.to_dict(model.enums.State)))
+            (self.num_constructions, len(model.enums.to_dict(model.enums.State)))
         )
 
     def get_word(self, word_idx: int) -> str:

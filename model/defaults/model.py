@@ -22,7 +22,7 @@ class Parameters:
     # ----
     # Vocabulary
     # ----
-    num_words: int = 100
+    num_constructions: int = 100
 
     sampling_type: (
         model.constructions.sample.ZipfianSampling
@@ -49,5 +49,5 @@ class Parameters:
         true_ranks, self.priors = self.sampling_type.get_priors(self.nprandom)
 
         self.vocabulary = model.constructions.vocabulary.Vocabulary(
-            self.num_words, self.priors.tolist(), self.priors_enabled
+            self.num_constructions, self.priors.tolist(), self.priors_enabled
         )

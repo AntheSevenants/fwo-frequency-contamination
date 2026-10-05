@@ -51,24 +51,26 @@ class Tracker:
     def reset(self):
         self.communicative_success.reset()
 
-        self.chosen_words = np.zeros(self.model.params.vocabulary.num_words)
+        self.chosen_constructions = np.zeros(
+            self.model.params.vocabulary.num_constructions
+        )
         self.confusion_matrix = np.zeros(
             (
-                self.model.params.vocabulary.num_words,
-                self.model.params.vocabulary.num_words,
+                self.model.params.vocabulary.num_constructions,
+                self.model.params.vocabulary.num_constructions,
             )
         )
 
         self.decision_entropy = []
 
-    def register_word_chosen(self, word_idx: int):
-        """Register in the tracker which word was chosen by an agent.
+    def register_construction_chosen(self, construction_idx: int):
+        """Register in the tracker which construction was chosen by an agent.
 
         Args:
-            word_idx (int): The index of the chosen word
+            construction_idx (int): The index of the chosen construction
         """
 
-        self.chosen_words[word_idx] += 1
+        self.chosen_constructions[construction_idx] += 1
 
     def register_win_index(self, win_index: int, true_index: int):
         self.confusion_matrix[true_index][win_index] += 1
