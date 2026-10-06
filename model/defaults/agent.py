@@ -6,6 +6,7 @@ from typing import List, Optional
 
 import model.defaults.model
 import model.constructions.vocabulary
+import model.constructions.tally
 import model.enums
 
 
@@ -24,4 +25,4 @@ class Attributes:
             raise ValueError("Model parameters cannot be None")
 
         # Make a deepcopy of the vocabulary
-        self.vocabulary = copy.deepcopy(self.vocabulary)
+        self.tally = model.constructions.tally.Tally(self.vocabulary)

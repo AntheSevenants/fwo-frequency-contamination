@@ -81,7 +81,9 @@ class ContaminationModel(mesa.Model):
         for dead_agent in dead_agents:
             dead_agent.remove()
 
-    def get_random_agent(self, speaker_agent: "ContaminationAgent"):
+    def get_random_agent(
+        self, speaker_agent: "ContaminationAgent"
+    ) -> "ContaminationAgent":
         # Choose a random other agent that is not the agent itself
         while True:
             hearer_agent = self.random.choice(self.agents)
@@ -89,3 +91,10 @@ class ContaminationModel(mesa.Model):
                 break
 
         return hearer_agent
+
+    def get_random_word_index(self) -> int:
+        random_word_index = int(
+            self.params.nprandom.choice(self.params.word_indices, p=self.params.priors)
+        )
+
+        return random_word_index

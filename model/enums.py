@@ -10,6 +10,11 @@ class Ambiguity:
     NOT_AMBIGUOUS = 2
 
 
+class Construction:
+    A = 0
+    B = 1
+
+
 class Perspective:
     SOURCE = 0
     TARGET = 1
@@ -21,7 +26,22 @@ class Contamination:
 
 
 class State:
-    SOURCE_CLEAN = (Perspective.SOURCE, Contamination.NONE)
-    SOURCE_DIRTY = (Perspective.SOURCE, Contamination.CONTAMINATED)
-    TARGET_CLEAN = (Perspective.TARGET, Contamination.NONE)
-    TARGET_DIRTY = (Perspective.TARGET, Contamination.CONTAMINATED)
+    A_NORMAL = (Construction.A, Contamination.NONE)
+    A_CONTAMINATED = (Construction.A, Contamination.CONTAMINATED)
+    B_NORMAL = (Construction.B, Contamination.NONE)
+    B_CONTAMINATED = (Construction.B, Contamination.CONTAMINATED)
+
+    # Create a lookup table
+    _LOOKUP = {
+        A_NORMAL: 0,
+        A_CONTAMINATED: 1,
+        B_NORMAL: 2,
+        B_CONTAMINATED: 3,
+    }
+
+    _COUNT = 4
+
+    @classmethod
+    def get_state(cls, construction, contamination):
+        # Using a tuple as a key allows for a single lookup
+        return cls._LOOKUP.get((construction, contamination))

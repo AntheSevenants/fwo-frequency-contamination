@@ -28,14 +28,14 @@ class ReporterType:
 
 
 model_reporters_base = {
-    "chosen_concepts": ModelReporter(
-        property_name="chosen_concepts", reporter_types=[ReporterType.AS_IS]
-    ),
-    "communication_results_go": ModelReporter(
-        property_name="__any_outcomes__",
-        reporter_types=[ReporterType.PERCENT_MICROMACRO],
-        associated_enum=model.success.CommunicationResult,
-    ),
+    # "chosen_concepts": ModelReporter(
+    #     property_name="chosen_concepts", reporter_types=[ReporterType.AS_IS]
+    # ),
+    # "communication_results_go": ModelReporter(
+    #     property_name="__any_outcomes__",
+    #     reporter_types=[ReporterType.PERCENT_MICROMACRO],
+    #     associated_enum=model.success.CommunicationResult,
+    # ),
     # "reduction_outcomes_go": ModelReporter(
     #     property_name="__reduction_outcomes__",
     #     reporter_types=[ReporterType.PERCENT_MICROMACRO],

@@ -9,7 +9,7 @@ from dataclasses import dataclass
 
 @dataclass
 class Vocabulary:
-    num_constructions: int
+    num_words: int
     priors: List[float]
     priors_enabled: bool
 
@@ -17,12 +17,19 @@ class Vocabulary:
     # display_names: List[str]
 
     def __post_init__(self):
-        self.word_indices: List[int] = list(range(0, self.num_constructions))
-        self.words: List[str] = [str(word_index) for word_index in self.word_indices]
+        # self.words: List[str] = [str(word_index) for word_index in self.word_indices]
 
-        self.frequency: np.ndarray = np.zeros(
-            (self.num_constructions, len(model.enums.to_dict(model.enums.State)))
-        )
+        # TODO: make these work on a per construction basis
+        self.ambiguity_probs: List[float] = [0.5] * self.num_words
+        self.a_probs: List[float] = [0.5] * self.num_words
 
-    def get_word(self, word_idx: int) -> str:
-        return self.words[word_idx]
+    # TODO: if necessary, make ambiguity construction dependent
+    def get_ambiguity_prob(self, word_idx: int, construction: int):
+        # TODO: not sure if this makes sense
+        if construction == model.enums.Construction.B:
+            return 0
+
+        return self.ambiguity_probs[word_idx]
+
+    def get_A_prob(self, word_idx: int):
+        return self.a_probs[word_idx]

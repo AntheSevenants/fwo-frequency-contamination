@@ -22,7 +22,7 @@ class Parameters:
     # ----
     # Vocabulary
     # ----
-    num_constructions: int = 100
+    num_words: int = 100
 
     sampling_type: (
         model.constructions.sample.ZipfianSampling
@@ -45,9 +45,12 @@ class Parameters:
         # Initialise random number generator
         self.nprandom = np.random.default_rng(self.seed)
 
+        # Indices
+        self.word_indices: List[int] = list(range(0, self.num_words))
+
         # Get the priors for the chosen sampling type
         true_ranks, self.priors = self.sampling_type.get_priors(self.nprandom)
 
         self.vocabulary = model.constructions.vocabulary.Vocabulary(
-            self.num_constructions, self.priors.tolist(), self.priors_enabled
+            self.num_words, self.priors.tolist(), self.priors_enabled
         )
