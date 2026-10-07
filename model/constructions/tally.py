@@ -48,17 +48,15 @@ class Tally:
         ), self.frequency[word_index, indices]
 
     def get_reception_counts(
-        self, word_index: int, construction: int
+        self, word_index: int, construction: int, contamination: int
     ) -> Tuple[Tuple[Tuple[int, int], Tuple[int, int]], np.ndarray]:
-        contamination_profile = (construction, model.enums.Contamination.CONTAMINATED)
-        non_contamination_profile = (
+        real_profile = (construction, contamination)
+        confusion_profile = (
             np.abs(construction - 1),
-            model.enums.Contamination.NONE,
+            np.abs(contamination - 1),
         )
-        contamination_idx = model.enums.State.get_state(*contamination_profile)
-        regular_idx = model.enums.State.get_state(*non_contamination_profile)
+        real_idx = model.enums.State.get_state(*real_profile)
+        confusion_idx = model.enums.State.get_state(*confusion_profile)
 
-        indices = np.array([contamination_idx, regular_idx], dtype=int)
-        return (contamination_profile, non_contamination_profile), self.frequency[
-            word_index, indices
-        ]
+        indices = np.array([real_idx, confusion_idx], dtype=int)
+        return (real_profile, confusion_profile), self.frequency[word_index, indices]

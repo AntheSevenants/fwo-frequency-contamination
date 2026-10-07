@@ -98,10 +98,17 @@ class ContaminationAgent(mesa.Agent):
             else profiles[1]
         )
 
-        ambiguity_prob = self.model.params.vocabulary.get_ambiguity_prob(
-            chosen_word_index, construction
-        )
-        is_ambiguous = self.model.params.nprandom.random() < ambiguity_prob
+        # "iets verkeerdS"
+        if (
+            construction == model.enums.Construction.A
+            and contamination == model.enums.Contamination.NONE
+        ):
+            is_ambiguous = False
+        else:
+            ambiguity_prob = self.model.params.vocabulary.get_ambiguity_prob(
+                chosen_word_index, construction
+            )
+            is_ambiguous = self.model.params.nprandom.random() < ambiguity_prob
 
         hearer_agent.receive_construction(
             chosen_word_index, construction, contamination, is_ambiguous
@@ -117,7 +124,7 @@ class ContaminationAgent(mesa.Agent):
             # profiles = ((construction, contamination), (construction, contamination))
             # counts = counts for those profiles
             profiles, counts = self.atts.tally.get_reception_counts(
-                word_index, construction
+                word_index, construction, contamination
             )
             threshold = counts[0] / counts.sum()
             heard_profile = (

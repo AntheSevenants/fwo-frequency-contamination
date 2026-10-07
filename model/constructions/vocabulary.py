@@ -25,10 +25,6 @@ class Vocabulary:
 
     # TODO: if necessary, make ambiguity construction dependent
     def get_ambiguity_prob(self, word_idx: int, construction: int):
-        # TODO: not sure if this makes sense
-        if construction == model.enums.Construction.B:
-            return 0
-
         return self.ambiguity_probs[word_idx]
 
     def get_A_prob(self, word_idx: int):
