@@ -91,7 +91,7 @@ class ContaminationAgent(mesa.Agent):
         profiles, counts = self.atts.tally.get_production_counts(
             chosen_word_index, construction
         )
-        threshold = self.model.params.parsing_mode.get_threshold(counts)
+        threshold = counts[0] / counts.sum()
         contamination = (
             profiles[0]
             if self.model.params.nprandom.random() < threshold
@@ -126,7 +126,7 @@ class ContaminationAgent(mesa.Agent):
             profiles, counts = self.atts.tally.get_reception_counts(
                 word_index, construction, contamination
             )
-            threshold = counts[0] / counts.sum()
+            threshold = self.model.params.parsing_mode.get_threshold(counts)
             heard_profile = (
                 profiles[0]
                 if self.model.params.nprandom.random() < threshold
