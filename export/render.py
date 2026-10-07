@@ -88,7 +88,7 @@ def prerender_profile_graphs(
             combination_ids,
             graphs,
             single_run=selected_run,
-            # selected_step=selected_step,
+            selected_step=selected_step,
             aggregate=aggregate_settings,
             disable_title=disable_title,
             legend_titles=legend_titles_override,

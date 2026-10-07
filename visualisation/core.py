@@ -460,6 +460,16 @@ def plot_value(
                 alpha=0.2,
             )
 
+        if plot_mean:
+            value_mean = float(np.mean(value_list))
+            ax.axhline(value_mean, color="gray")
+
+    # Draw step focus line if required
+    if step is not None:
+        _step = convert_step(step, len(value_lists[0]))
+        print(_step)
+        ax.axvline(_step, color="red")
+
     scale_x_axis(ax, x_scale_factor)
 
     if ylim is not None:
@@ -634,6 +644,11 @@ def plot_ratio(
 
     if title is not None and not disable_title:
         ax.set_title(title)
+
+    # Draw step focus line if required
+    if step is not None:
+        _step = convert_step(step, len(value_lists[0]))
+        ax.axvline(_step, color="red")
 
     scale_x_axis(ax, x_scale_factor)
     if y_axis_percentage:
