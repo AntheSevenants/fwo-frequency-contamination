@@ -1,5 +1,7 @@
 import math
 
+from matplotlib.lines import Line2D
+
 import model.model
 import model.reporters.model
 import model.reporters.agent
@@ -41,6 +43,10 @@ def get_multi_group_context(aggregate_extension: bool) -> int:
         if not aggregate_extension
         else MultiGroupContext.AGGREGATE_EXTENSION
     )
+
+
+def unique(x: List[str]):
+    return list(dict.fromkeys(x))
 
 
 def formatter(x: float, pos: float, scale: int):
@@ -360,8 +366,11 @@ def plot_value(
     max_data: List[float] | List[List[float]] | None = None,
     step: int | float | None = None,
     title: Optional[str] = None,
-    legend_title: Optional[str] = None,
-    legend_labels: List[str] | None = None,
+    legend_titles: List[str] | None = None,
+    legend_colour_labels: List[str] | None = None,
+    legend_style_labels: List[str] | None = None,
+    legend_colours: List[str] | None = None,
+    legend_styles: List[str] | None = None,
     x_label: str | None = None,
     y_label: str | None = None,
     disable_title: bool = False,
@@ -381,8 +390,11 @@ def plot_value(
         max_data (List[float] | List[List[float]] | None, optional): List of maximal values. Needs to be defined together with min_data. Defaults to None.
         step (int | float): Step to highlighted in the graph (on the scale of the datacollector). Can also be a fraction, will be converted to an absolute step. Defaults to None (= no highlight).
         title (Optional[str], optional): The title for the graph. Defaults to None.
-        legend_title (Optional[str], optional): The title for the legend. Defaults to None.
-        legend_labels (List[str], optional): The labels for the legend. Defaults to None.
+        legend_titles (List[str], optional): The titles for the legends. Defaults to None.
+        legend_colour_labels (List[str], optional): The colour labels for the legend. Defaults to None.
+        legend_style_labels (List[str], optional): Thestyle  labels for the legend. Defaults to None.
+        legend_colours (List[str], optional): The colours for the legend. Defaults to None.
+        legend_styles (List[str], optional): The line styles for the legend. Defaults to None.
         x_label (str, optional): The label for the X axis. Defaults to None.
         y_label (str, optional): The label for the Y axis. Defaults to None.
         disable_title (bool, optional): Whether to show a title for this graph. Defaults to False.
@@ -407,18 +419,34 @@ def plot_value(
     multi_group_context = get_multi_group_context(aggregate_extension_x is not None)
 
     for attribute_idx, value_list in enumerate(value_lists):
+        # Line colour stays constant with conservator/innovator
         # Across parameter combinations, different colours fit better
-        line_colour = COLOURS[attribute_idx]
-        # I'm attributing line style to micro/macro
-        line_style = get_line_style_by_group_context(
-            attribute_idx, num_groups, multi_group_context
-        )
-        if legend_labels is None:
+        # Can also be overridden manually
+        if legend_colours is None:
+            line_colour = (
+                COLOURS[0]
+                if multi_group_context == MultiGroupContext.CONSERVATOR_INNOVATOR
+                else COLOURS[attribute_idx]
+            )
+        else:
+            line_colour = legend_colours[attribute_idx]
+
+        if legend_styles is None:
+            line_style = get_line_style_by_group_context(
+                attribute_idx, num_groups, multi_group_context
+            )
+        else:
+            line_style = legend_styles[attribute_idx]
+
+        if legend_colour_labels is None:
             legend_label = make_legend_label_by_group_context(
                 attribute_idx, aggregate_extension_x=aggregate_extension_x
             )
         else:
-            legend_label = legend_labels[attribute_idx]
+            if legend_style_labels is None:
+                legend_label = legend_colour_labels[attribute_idx]
+            else:
+                legend_label = None
 
         ax.plot(value_list, color=line_colour, linestyle=line_style, label=legend_label)
 
@@ -431,16 +459,6 @@ def plot_value(
                 color=line_colour,
                 alpha=0.2,
             )
-
-        if plot_mean:
-            value_mean = float(np.mean(value_list))
-            ax.axhline(value_mean, color="gray")
-
-    # Draw step focus line if required
-    if step is not None:
-        _step = convert_step(step, len(value_lists[0]))
-        print(_step)
-        ax.axvline(_step, color="red")
 
     scale_x_axis(ax, x_scale_factor)
 
@@ -455,14 +473,38 @@ def plot_value(
     if title is not None and not disable_title:
         ax.set_title(title)
 
-    if num_groups > 1:
-        legend_kwargs = {}
+    legend_kwargs = {}
+    if legend_titles is not None:
+        if len(legend_titles) == 1:
+            legend_kwargs["title"] = legend_titles[0]
+            ax.legend(**legend_kwargs)
+        elif len(legend_titles) == 2:
+            if legend_colours is None or legend_styles is None:
+                raise ValueError("Legend colours and styles labels cannot be None")
 
-        if legend_title is not None:
-            legend_kwargs["title"] = legend_title
+            unique_colours = unique(legend_colours)
+            unique_styles = unique(legend_styles)
 
-        ax.legend(**legend_kwargs)
+            colour_lines = [Line2D([0], [0], color=colour) for colour in unique_colours]
+            style_lines = [
+                Line2D([0], [0], color="black", linestyle=style)  # type: ignore
+                for style in unique_styles
+            ]
 
+            if legend_colour_labels is None or legend_style_labels is None:
+                raise ValueError("Legend colour and style labels cannot be None")
+
+            legend = ax.legend(
+                colour_lines + style_lines,
+                legend_colour_labels + legend_style_labels,
+                title="",
+                loc="best",
+                ncols=2,
+            )
+        else:
+            raise ValueError("Legend titles count cannot exceed 2")
+    elif legend_titles is None and num_groups > 1:
+        ax.legend()
     output_fig = get_ax_figure(ax)
     plt.close(output_fig)
 
@@ -472,9 +514,6 @@ def plot_value(
 def plot_ratio(
     data: Union[model.model.ContaminationModel, List[List[float]]],
     attributes: Union[str, List[str]],
-    enum_translation: Dict[int, str],
-    filter_dimension: int | None = None,
-    filter_matrix_dimension: int | None = None,
     ylim: List[float] = [0, 1],
     x_scale_factor: int = 1,
     ax: Optional[matplotlib.axes.Axes] = None,
@@ -483,10 +522,14 @@ def plot_ratio(
     max_data: List[float] | List[List[float]] | None = None,
     step: int | float | None = None,
     title: Optional[str] = None,
-    legend_title: Optional[str] = None,
-    legend_labels: List[str] | None = None,
+    legend_titles: List[str] | None = None,
+    legend_colour_labels: List[str] | None = None,
+    legend_style_labels: List[str] | None = None,
+    legend_colours: List[str] | None = None,
+    legend_styles: List[str] | None = None,
     x_label: str | None = None,
     y_label: str | None = None,
+    y_axis_percentage: bool = False,
     disable_title: bool = False,
     aggregate_extension_x: List[str] | None = None,
 ) -> Tuple[matplotlib.figure.Figure, matplotlib.axes.Axes]:
@@ -495,9 +538,6 @@ def plot_ratio(
     Args:
         data (Union[model.model.ContaminationModel, List[List[float]]): Either a model instance or a list of values
         attributes (Union[str, List[str]]): The names of the series to model. Always supply, even if input data is not a model, so dimensionality of the data can be assessed.
-        enum_translation (Dict[int, str]): Provide the translation for the dimensions in the array.
-        filter_dimension (int | None): Only plot one specific dimension of the array. Defaults to None.
-        filter_matrix_dimension (int | None): Only plot one specific dimension of the inner matrix. Defaults to None.
         ylim (List[float], optional): The expected range of values, will be the y axis. Defaults to [0, 1].
         x_scale_factor (int, optional): The factor to scale the x axis ticks by. Defaults to 1.
         ax (Optional[matplotlib.axes.Axes], optional): A pre-existing axis. Pass if you are building a multi-plot. Defaults to None.
@@ -506,10 +546,14 @@ def plot_ratio(
         max_data (List[float] | List[List[float]] | None, optional): List of maximal values. Needs to be defined together with min_data. Defaults to None.
         step (int | float): Step to highlighted in the graph (on the scale of the datacollector). Can also be a fraction, will be converted to an absolute step. Defaults to None (= no highlight).
         title (Optional[str], optional): The title for the graph. Defaults to None.
-        legend_title (Optional[str], optional): The title for the legend. Defaults to None.
-        legend_labels (List[str], optional): The labels for the legend. Defaults to None.
+        legend_titles (List[str], optional): The titles for the legends. Defaults to None.
+        legend_colour_labels (List[str], optional): The colour labels for the legend. Defaults to None.
+        legend_style_labels (List[str], optional): Thestyle  labels for the legend. Defaults to None.
+        legend_colours (List[str], optional): The colours for the legend. Defaults to None.
+        legend_styles (List[str], optional): The line styles for the legend. Defaults to None.
         x_label (str, optional): The label for the X axis. Defaults to None.
         y_label (str, optional): The label for the Y axis. Defaults to None.
+        y_axis_percentage (bool): Whether the y axis should be formatted as a percentage. Defaults to False.
         disable_title (bool, optional): Whether to show a title for this graph. Defaults to False.
         aggregate_extension_x (List[str], optional): A list of values for the legend of an aggregate extension graph. Defaults to None.
 
@@ -537,216 +581,109 @@ def plot_ratio(
     multi_group_context = get_multi_group_context(aggregate_extension_x is not None)
 
     for attribute_idx, matrix in enumerate(value_lists):
-        is_micro_macro = matrix.ndim == 3
-        start_idx = filter_dimension if filter_dimension is not None else 0
-
-        # if there is a micro macro layer first, there is another dimension
-        # inbetween time and the different properties
-
-        # Determine the range of the iteration based on dimensionality
-        # If 2D: iterate over columns (dim 1)
-        # If 3D: iterate over properties (dim 2)
-        iter_dim = 2 if is_micro_macro else 1
-        max_iter = matrix.shape[iter_dim]
-
-        for i in range(start_idx, max_iter):
-            # Determine label once per 'i' iteration
-            if legend_labels is None:
-                legend_label = (
-                    enum_translation[i]
-                    if aggregate_extension_x is None
-                    else aggregate_extension_x[attribute_idx]
+        for i in range(matrix.shape[1]):
+            # Line colour normally indicates the construction
+            # Across parameter combinations, we only show the innovative construction
+            # so here line colour can encode a specific parameter value
+            if legend_colours is None:
+                line_colour = (
+                    COLOURS[i]
+                    if multi_group_context == MultiGroupContext.CONSERVATOR_INNOVATOR
+                    else COLOURS[attribute_idx]
                 )
             else:
-                legend_label = legend_labels[attribute_idx]
+                line_colour = legend_colours[attribute_idx]
 
-            if not is_micro_macro:
-                # --- 2D CASE ---
+            if legend_styles is None:
                 line_style = get_line_style_by_group_context(
                     attribute_idx, num_groups, multi_group_context
                 )
-
-                ax.plot(
-                    matrix[:, i],
-                    color=COLOURS[attribute_idx],
-                    linestyle=line_style,
-                    label=legend_label,
-                )
-
-                if _min_data is not None and _max_data is not None:
-                    ax.fill_between(
-                        x=range(matrix.shape[0]),
-                        y1=_min_data[attribute_idx, :, i],
-                        y2=_max_data[attribute_idx, :, i],
-                        color=COLOURS[attribute_idx],
-                        alpha=0.2,
-                    )
             else:
-                start_idx_j = (
-                    filter_matrix_dimension
-                    if filter_matrix_dimension is not None
-                    else 0
+                line_style = legend_styles[attribute_idx]
+
+            if legend_colour_labels is None:
+                legend_label = make_legend_label_by_group_context(
+                    attribute_idx, i, aggregate_extension_x
+                )
+            else:
+                if legend_style_labels is None:
+                    legend_label = legend_colour_labels[attribute_idx]
+                else:
+                    legend_label = None
+
+            ax.plot(
+                matrix[:, i],
+                color=line_colour,
+                linestyle=line_style,
+                label=legend_label,
+            )
+
+            # Plot the shaded area between min and max values
+            if _min_data is not None and _max_data is not None:
+                ax.fill_between(
+                    x=range(matrix.shape[0]),
+                    y1=_min_data[attribute_idx, :, i],
+                    y2=_max_data[attribute_idx, :, i],
+                    color=line_colour,
+                    alpha=0.2,
                 )
 
-                # --- 3D CASE ---
-                # We iterate through the secondary dimension (j)
-                for j in range(start_idx_j, matrix.shape[1]):
-                    line_style = LINE_STYLES[j]
-
-                    legend_label_suffixed = legend_label
-                    if filter_matrix_dimension is None:
-                        legend_label_suffixed += make_legend_suffix(j)
-
-                    ax.plot(
-                        matrix[:, j, i],
-                        color=COLOURS[attribute_idx],
-                        linestyle=line_style,
-                        label=legend_label_suffixed,
-                    )
-
-                    if _min_data is not None and _max_data is not None:
-                        ax.fill_between(
-                            x=range(matrix.shape[0]),
-                            y1=_min_data[attribute_idx, :, j, i],
-                            y2=_max_data[attribute_idx, :, j, i],
-                            color=COLOURS[attribute_idx],
-                            alpha=0.2,
-                        )
-
-                    # If we are filtering, we only process the first valid index and move on
-                    if filter_matrix_dimension is not None:
-                        break
-
-            # If we are filtering, we only process the first valid index and move on
-            if filter_dimension is not None:
+            # Only show the innovative form in an aggregate extension graph
+            if multi_group_context == MultiGroupContext.AGGREGATE_EXTENSION:
                 break
 
     if title is not None and not disable_title:
         ax.set_title(title)
 
-    # Draw step focus line if required
-    if step is not None:
-        _step = convert_step(step, len(value_lists[0]))
-        ax.axvline(_step, color="red")
-
     scale_x_axis(ax, x_scale_factor)
+    if y_axis_percentage:
+        set_y_axis_percent(ax)
 
     ax.set_ylim(*ylim)
     ax.set_yticks(np.arange(ylim[0], ylim[1] + 0.1, 0.1))
-
-    set_y_axis_percent(ax)
 
     if x_label is not None:
         ax.set_xlabel(x_label)
     if y_label is not None:
         ax.set_ylabel(y_label)
 
-    # if num_groups > 1:
     legend_kwargs = {}
+    if legend_titles is not None:
+        if len(legend_titles) == 1:
+            legend_kwargs["title"] = legend_titles[0]
+            ax.legend(**legend_kwargs)
+        elif len(legend_titles) == 2:
+            if legend_colours is None or legend_styles is None:
+                raise ValueError("Legend colours and styles labels cannot be None")
 
-    if legend_title is not None:
-        legend_kwargs["title"] = legend_title
+            unique_colours = unique(legend_colours)
+            unique_styles = unique(legend_styles)
 
-    ax.legend(**legend_kwargs)
+            colour_lines = [Line2D([0], [0], color=colour) for colour in unique_colours]
+            style_lines = [
+                Line2D([0], [0], color="black", linestyle=style)  # type: ignore
+                for style in unique_styles
+            ]
+
+            if legend_colour_labels is None or legend_style_labels is None:
+                raise ValueError("Legend colour and style labels cannot be None")
+
+            legend = ax.legend(
+                colour_lines + style_lines,
+                legend_colour_labels + legend_style_labels,
+                title="",
+                loc="best",
+                ncols=2,
+            )
+        else:
+            raise ValueError("Legend titles count cannot exceed 2")
+    elif legend_titles is None and num_groups > 1:
+        ax.legend()
 
     output_fig = get_ax_figure(ax)
     plt.close(output_fig)
 
     return (output_fig, ax)
-
-
-def plot_ratio_pass(
-    data: Union[
-        model.model.ContaminationModel, List[List[float]], List[List[List[float]]]
-    ],
-    attributes: str,
-    ylim: Optional[List[float]] = None,
-    y_scale_factor: int = 1,
-    baseline: Optional[float] = None,
-    ax: Optional[matplotlib.axes.Axes] = None,
-    title: Optional[str] = None,
-    disable_title: Optional[bool] = False,
-) -> matplotlib.figure.Figure:
-    """Plot a desired series of ratio values for all agents at once for a given model run
-
-    Args:
-        data (Union[model.model.ContaminationModel, List[List[float]], List[List[float]]): Either a model instance or a list of values
-        attributes (Optional[str], optional): The name of the series to model.
-        ylim (Optional[List[float]], optional): The expected range of values for y axis. Defaults to None.
-        y_scale_factor (int, optional): The factor to scale the y axis ticks by. Defaults to 1.
-        baseline (Optional[float], optional): The baseline to show in each subplot. Can mark a default value. Defaults to None.
-        ax (Optional[matplotlib.axes.Axes], optional): A pre-existing axis. Please do not pass any axes currently. Defaults to None.
-        title (Optional[str], optional): The title for the graph. Defaults to None.
-        disable_title (Optional[bool], optional): Whether to show a title for this graph.. Defaults to False.
-
-    Raises:
-        ValueError: Passing an Axis through ax is currently not supported
-        ValueError: Input matrix dimensions can only be 2 or 3
-
-    Returns:
-        matplotlib.figure.Figure: The created graph
-    """
-
-    # Get the right data based on the supplied arguments
-    matrix = get_value_lists(data, attributes)[0]
-
-    if ax is not None:
-        raise ValueError(
-            "Cannot do mosaic plots for this graph type. Please do not pass an axis."
-        )
-
-    # num agents = size of list ite
-    num_agents = matrix[0].shape[0]
-    fig, axes = plt.subplots(nrows=1, ncols=num_agents, figsize=(15, 10), sharey=True)
-
-    num_steps = matrix.shape[0]
-    time_steps = np.arange(num_steps)
-
-    num_dimensions = len(matrix.shape)
-
-    baseline_to_plot = None
-    if baseline is not None:
-        # Vertical baseline which shows 0.5
-        baseline_to_plot = np.full(num_steps, baseline)
-
-    for i, _ax in enumerate(fig.axes):
-        # Plot baselines first
-        if baseline_to_plot is not None:
-            _ax.plot(
-                baseline_to_plot,
-                time_steps,
-                color="gray",
-                alpha=0.1,
-                linestyle="dashed",
-            )
-
-        if num_dimensions == 3:
-            _ax.plot(matrix[:, i, 0], time_steps, color="blue")
-        elif num_dimensions == 2:
-            _ax.plot(matrix[:, i], time_steps, color="blue")
-        else:
-            raise ValueError("Invalid number of dimensions")
-
-        if ylim is not None:
-            _ax.set_xlim(*ylim)
-        _ax.set_title(f"{i + 1}")
-        _ax.set_xticks([])
-        # ax.set_xlabel('Construction 0 usage')
-        _ax.grid(True)
-
-        # X will become Y further down
-        scale_x_axis(_ax, y_scale_factor)
-
-        # Disable ugly boxes
-        for spine in _ax.spines.values():
-            spine.set_visible(False)
-
-    fig.axes[0].set_ylabel("Time steps in the simulation")
-    fig.axes[0].invert_yaxis()
-
-    plt.close(fig)
-
-    return fig
 
 
 def check_if_none(variable_name: str, value: Any):
@@ -771,6 +708,11 @@ def plot_histogram(
     bin_range: Optional[List[float]] = None,
     title: Optional[str] = None,
     disable_title: bool = False,
+    legend_titles: List[str] | None = None,
+    legend_colour_labels: List[str] | None = None,
+    legend_style_labels: List[str] | None = None,
+    legend_colours: List[str] | None = None,
+    legend_styles: List[str] | None = None,
     aggregate_extension_x: Any = None,
 ) -> Tuple[matplotlib.figure.Figure, matplotlib.axes.Axes]:
     """Plot a desired series of values from a model run
