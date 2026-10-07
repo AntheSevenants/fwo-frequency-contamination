@@ -31,7 +31,7 @@ class ModelReporter:
             ReporterType.SINGULAR,
             ReporterType.MEAN,
             ReporterType.MEDIAN,
-            ReporterType.STD,
+            # ReporterType.STD,
         ]
     )
     index: int | None = None
@@ -39,8 +39,12 @@ class ModelReporter:
 
 # Basic properties for which to construct model reporters
 model_reporters_base = {
-    # "means": ModelReporter(property_name="vocabulary.__means__"),
-    # "sigmas": ModelReporter(property_name="vocabulary.__sigmas__"),
+    "frequency": ModelReporter(property_name="tally.__frequency__"),
+    "contamination": ModelReporter(property_name="tally.__contamination__"),
+    "contamination_mean": ModelReporter(property_name="tally.__contamination_mean__"),
+    "contamination_median": ModelReporter(
+        property_name="tally.__contamination_median__"
+    ),
 }
 
 # Create a specialised tracking function depending on:
