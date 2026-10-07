@@ -91,7 +91,7 @@ class ContaminationAgent(mesa.Agent):
         profiles, counts = self.atts.tally.get_production_counts(
             chosen_word_index, construction
         )
-        threshold = counts[0] / counts.sum()
+        threshold = self.model.params.parsing_mode.get_threshold(counts)
         contamination = (
             profiles[0]
             if self.model.params.nprandom.random() < threshold

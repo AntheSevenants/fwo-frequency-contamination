@@ -2,6 +2,7 @@ from itertools import product
 
 import model.constructions.sample
 import model.constructions.vocabulary
+import model.constructions.parsing
 import numpy as np
 
 from dataclasses import dataclass, asdict, field
@@ -40,6 +41,10 @@ class Parameters:
     # ----
     # Cognition parameters
     # ----
+    parsing_mode: (
+        model.constructions.parsing.ExactParsing
+        | model.constructions.parsing.LazyParsing
+    ) = field(default_factory=lambda: model.constructions.parsing.ExactParsing())
 
     def __post_init__(self):
         # Initialise random number generator
