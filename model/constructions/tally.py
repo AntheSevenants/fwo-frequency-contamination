@@ -3,7 +3,6 @@ from functools import cached_property
 
 import numpy as np
 import model.enums
-import model.constructions.vocabulary
 
 # Save the indices of the "contaminated" rows
 contamination_idx_a = model.enums.State.get_state(
@@ -16,11 +15,9 @@ contamination_indices = np.array([contamination_idx_a, contamination_idx_b], dty
 
 
 class Tally:
-    def __init__(self, vocabulary: model.constructions.vocabulary.Vocabulary):
+    def __init__(self, num_words: int):
         # Build frequency tallies
-        self.frequency: np.ndarray = np.zeros(
-            (vocabulary.num_words, model.enums.State._COUNT)
-        )
+        self.frequency: np.ndarray = np.zeros((num_words, model.enums.State._COUNT))
 
         regular_indices = np.array(
             [

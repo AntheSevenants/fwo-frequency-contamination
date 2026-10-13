@@ -5,7 +5,6 @@ from dataclasses import dataclass, asdict, field
 from typing import List, Optional
 
 import model.defaults.model
-import model.constructions.vocabulary
 import model.constructions.tally
 import model.enums
 
@@ -13,7 +12,7 @@ import model.enums
 @dataclass
 class Attributes:
     model_params: model.defaults.model.Parameters
-    vocabulary: model.constructions.vocabulary.Vocabulary
+    num_words: int
 
     max_age: int | None
     age: int = 0  # How old is the agent currently?
@@ -25,4 +24,4 @@ class Attributes:
             raise ValueError("Model parameters cannot be None")
 
         # Make a deepcopy of the vocabulary
-        self.tally = model.constructions.tally.Tally(self.vocabulary)
+        self.tally = model.constructions.tally.Tally(self.num_words)

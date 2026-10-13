@@ -49,8 +49,8 @@ class ContaminationAgent(mesa.Agent):
 
         # Populate the agent's parameters based off the model parameters
         self.atts = model.defaults.agent.Attributes(
-            model_params=Contamination_model.params,
-            vocabulary=Contamination_model.params.vocabulary,
+            model_params=self.model.params,
+            num_words=self.model.params.vocabulary.num_words,
             max_age=age,
         )
 

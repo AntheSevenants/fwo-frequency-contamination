@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Iterable, List, Tuple
+from typing import Callable, Iterable, List, Tuple
 
 import numpy as np
 
@@ -42,19 +42,31 @@ class FlatVocabulary(BaseVocabulary):
         for i in range(self.num_words):
             self.words.append(Word(shared_prior, shared_ambiguity, shared_a_prob))
 
-        self.set_priors()
 
-
-class SampleVocabulary(BaseVocabulary):
+class SampledVocabulary(BaseVocabulary):
     def __init__(
-        self, priors: List[float], shared_ambiguity: float, shared_a_prob: float
+        self,
+        priors_factory: Callable[[np.random.Generator], List[float]],
+        shared_ambiguity: float,
+        shared_a_prob: float,
     ):
         super().__init__()
 
-        for prior in priors:
-            self.words.append(Word(prior, shared_ambiguity, shared_a_prob))
+        self._priors_factory = priors_factory
+        self._shared_ambiguity = shared_ambiguity
+        self._shared_a_prob = shared_a_prob
+        self._initialised = False
 
-        self.set_priors()
+    def _initialise(self, generator: np.random.Generator):
+        if self._initialised:
+            return
+
+        priors = self._priors_factory(generator)
+        for prior in priors:
+            self.words.append(Word(prior, self._shared_ambiguity, self._shared_a_prob))
+
+        # Don't forget to set num_words! (= num priors)
+        self.num_words = len(self.words)
 
 
 class PreciseVocabulary(BaseVocabulary):
@@ -63,5 +75,3 @@ class PreciseVocabulary(BaseVocabulary):
         self.num_words = len(items)
 
         self.words = items
-
-        self.set_priors()

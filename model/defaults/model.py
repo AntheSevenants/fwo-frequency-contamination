@@ -31,7 +31,7 @@ class Parameters:
     vocabulary: (
         model.constructions.vocab.FlatVocabulary
         | model.constructions.vocab.PreciseVocabulary
-        | model.constructions.vocab.SampleVocabulary
+        | model.constructions.vocab.SampledVocabulary
     ) = model.constructions.vocab.FlatVocabulary(100, 0.5, 0.5, 0.5)
 
     priors_enabled: bool = True
@@ -53,6 +53,13 @@ class Parameters:
     def __post_init__(self):
         # Initialise random number generator
         self.nprandom = np.random.default_rng(self.seed)
+
+        # Initialise priors for sampled vocabulary
+        if isinstance(self.vocabulary, model.constructions.vocab.SampledVocabulary):
+            self.vocabulary._initialise(self.nprandom)
+
+        # Compute the priors for the loaded vocabulary
+        self.vocabulary.set_priors()
 
         # Indices
         self.word_indices: List[int] = list(range(0, self.vocabulary.num_words))
