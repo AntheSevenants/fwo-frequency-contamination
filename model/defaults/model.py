@@ -1,7 +1,7 @@
 from itertools import product
 
 import model.constructions.sample
-import model.constructions.vocabulary
+import model.constructions.vocab
 import model.constructions.parsing
 import numpy as np
 
@@ -28,13 +28,12 @@ class Parameters:
     # ----
     # Vocabulary
     # ----
-    num_words: int = 100
+    vocabulary: (
+        model.constructions.vocab.FlatVocabulary
+        | model.constructions.vocab.PreciseVocabulary
+        | model.constructions.vocab.SampleVocabulary
+    ) = model.constructions.vocab.FlatVocabulary(100, 0.5, 0.5, 0.5)
 
-    sampling_type: (
-        model.constructions.sample.ZipfianSampling
-        | model.constructions.sample.ExponentialSampling
-        | model.constructions.sample.LinearSampling
-    ) = field(default_factory=lambda: model.constructions.sample.ZipfianSampling())
     priors_enabled: bool = True
 
     # ----
@@ -56,11 +55,4 @@ class Parameters:
         self.nprandom = np.random.default_rng(self.seed)
 
         # Indices
-        self.word_indices: List[int] = list(range(0, self.num_words))
-
-        # Get the priors for the chosen sampling type
-        true_ranks, self.priors = self.sampling_type.get_priors(self.nprandom)
-
-        self.vocabulary = model.constructions.vocabulary.Vocabulary(
-            self.num_words, self.priors.tolist(), self.priors_enabled
-        )
+        self.word_indices: List[int] = list(range(0, self.vocabulary.num_words))
