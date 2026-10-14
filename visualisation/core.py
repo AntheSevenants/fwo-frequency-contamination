@@ -1162,7 +1162,7 @@ def plot_confusion(
     fix, ax = check_ax(ax, disable_title)
 
     row_sums = matrix.sum(axis=1, keepdims=True)
-    normalized_confusion_matrix = matrix / row_sums
+    normalized_confusion_matrix = np.where(row_sums > 0, matrix / row_sums, 0)
     ax.matshow(normalized_confusion_matrix[0:_n, 0:_n])
 
     ax.set_xticks(range(_n))
