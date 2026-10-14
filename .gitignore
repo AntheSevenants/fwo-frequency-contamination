@@ -222,3 +222,4 @@ __marimo__/
 *.ipynb
 sweeps/
 test/
+*.sh
