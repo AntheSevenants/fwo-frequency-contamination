@@ -49,14 +49,8 @@ class ContaminationModel(mesa.Model):
 
         # Model data collection
         self.tracker = model.tracker.Tracker(self)
-
-        # Initialise the agent model reporters
-        for_all_types = self.params.a_group_share not in [
-            0,
-            1,
-        ]  # is there a group distinction?
         model_reporters_agents = model.reporters.agent.get_model_reporters(
-            for_all_types=for_all_types
+            for_all_types=self.params.group_distinction
         )
         # Initialise the model model reporters
         model_reporters_model = model.reporters.model.get_model_reporters()
@@ -108,10 +102,9 @@ class ContaminationModel(mesa.Model):
         # We start with equal distribution btwx the groups
         homophily_weights = [1.0, 1.0]
         if self.params.homophily is not None and group is not None:
-            homophily_weights[group] = (
-                homophily_weights[group]
-                + homophily_weights[group] * self.params.homophily[group]
-            )
+            other_group = abs(group - 1)
+            homophily_weights[group] -= self.params.homophily[group]
+            homophily_weights[other_group] = self.params.homophily[group]
 
         # First, filter the candidate agents for eligibility
         candidates: List["ContaminationAgent"] = [
