@@ -54,9 +54,10 @@ model_reporters_base = {
     #     property_name="decision_entropy_reentrance",
     #     reporter_types=[ReporterType.MEAN, ReporterType.MEDIAN],
     # ),
-    "confusion_matrix_go": ModelReporter(
-        property_name="confusion_matrix", reporter_types=[ReporterType.AS_IS]
-    ),
+    # TODO: reinstate confusion matrix
+    # "confusion_matrix_go": ModelReporter(
+    #     property_name="confusion_matrix", reporter_types=[ReporterType.AS_IS]
+    # ),
 }
 
 # For the reporter keys

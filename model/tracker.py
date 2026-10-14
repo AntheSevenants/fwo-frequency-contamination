@@ -1,6 +1,7 @@
 import mesa
 import numpy as np
 import model.success
+import model.enums
 
 from typing import Any, TYPE_CHECKING
 
@@ -32,7 +33,7 @@ def get_nested_attr(obj: object, attr_path: str) -> Any:
 class Tracker:
     """The tracker is the facilitates keeping track of the current model state."""
 
-    def __init__(self, Contamination_model: "ContaminationModel"):
+    def __init__(self, contamination_model: "ContaminationModel"):
         """Initialise a Tracker by supplying a MESA model.
 
         Args:
@@ -40,9 +41,9 @@ class Tracker:
         """
 
         # This will break pickling the model forever. Good :-)
-        self.model = Contamination_model
+        self.model = contamination_model
         self.communicative_success = model.success.CommunicativeSuccess(
-            Contamination_model
+            contamination_model
         )
 
         self.reset()
@@ -50,37 +51,7 @@ class Tracker:
     # Per step!
     def reset(self):
         self.communicative_success.reset()
-
-        self.chosen_words = np.zeros(self.model.params.vocabulary.num_words)
-        self.confusion_matrix = np.zeros(
-            (
-                self.model.params.vocabulary.num_words,
-                self.model.params.vocabulary.num_words,
-            )
-        )
-
         self.decision_entropy = []
-
-    def register_word_chosen(self, word_idx: int):
-        """Register in the tracker which word was chosen by an agent.
-
-        Args:
-            word_idx (int): The index of the chosen word
-        """
-
-        self.chosen_words[word_idx] += 1
-
-    def register_win_index(self, win_index: int, true_index: int):
-        self.confusion_matrix[true_index][win_index] += 1
-
-    def register_decision_entropy(self, decision_entropy: float):
-        self.decision_entropy.append(decision_entropy)
-
-    @property
-    def __any_outcomes__(self):
-        return self.communicative_success.outcomes[
-            model.success.CommunicationContext.ANY
-        ]
 
     def get_global(self, property_name):
         return getattr(self, property_name)

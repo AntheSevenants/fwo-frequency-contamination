@@ -50,7 +50,7 @@ class ContaminationAgent(mesa.Agent):
         # Populate the agent's parameters based off the model parameters
         self.atts = model.defaults.agent.Attributes(
             model_params=self.model.params,
-            num_words=self.model.params.vocabulary.num_words,
+            base_non_s=self.model.params.base_non_s,
             max_age=age,
         )
 
@@ -75,22 +75,18 @@ class ContaminationAgent(mesa.Agent):
         Args:
             hearer_agent (ContaminationAgent): The other agent with which the current agent interacts.
         """
-        chosen_word_index = self.model.get_random_word_index()
-        self.model.tracker.register_word_chosen(chosen_word_index)
-
-        # First, check whether we will communicate construction A or B
-        a_prob = self.model.params.vocabulary.get_A_prob(chosen_word_index)
-        construction = (
-            model.enums.Construction.A
-            if self.model.params.nprandom.random() < a_prob
-            else model.enums.Construction.B
-        )
+        # First, check whether we will communicate construction A or B, or nothing at all
+        construction = self.atts.get_construction()
+        # If no construction is chosen, skip
+        if construction is None:
+            return
+        else:
+            # Cast as Python int explicitly
+            construction = int(construction)
 
         # Now, let's check whether the agent will produce a contaminated form
         # profiles = (contamination, contamination)
-        profiles, counts = self.atts.tally.get_production_counts(
-            chosen_word_index, construction
-        )
+        profiles, counts = self.atts.tally.get_production_counts(construction)
         threshold = counts[0] / counts.sum()
         contamination = (
             profiles[0]
@@ -105,17 +101,13 @@ class ContaminationAgent(mesa.Agent):
         ):
             is_ambiguous = False
         else:
-            ambiguity_prob = self.model.params.vocabulary.get_ambiguity_prob(
-                chosen_word_index, construction
-            )
+            ambiguity_prob = self.atts.get_ambiguity_prob(construction)
             is_ambiguous = self.model.params.nprandom.random() < ambiguity_prob
 
-        hearer_agent.receive_construction(
-            chosen_word_index, construction, contamination, is_ambiguous
-        )
+        hearer_agent.receive_construction(construction, contamination, is_ambiguous)
 
     def receive_construction(
-        self, word_index: int, construction: int, contamination: int, is_ambiguous: bool
+        self, construction: int, contamination: int, is_ambiguous: bool
     ):
         # if there is contamination, it does not mean there is ambiguity,
         # in some contexts the ambiguity can be overcome
@@ -124,7 +116,7 @@ class ContaminationAgent(mesa.Agent):
             # profiles = ((construction, contamination), (construction, contamination))
             # counts = counts for those profiles
             profiles, counts = self.atts.tally.get_reception_counts(
-                word_index, construction, contamination
+                construction, contamination
             )
             threshold = self.model.params.parsing_mode.get_threshold(counts)
             heard_profile = (
@@ -135,7 +127,7 @@ class ContaminationAgent(mesa.Agent):
         else:
             heard_profile = (construction, contamination)
 
-        self.atts.tally.update(word_index, *heard_profile)
+        self.atts.tally.update(*heard_profile)
 
     def track_communication(self):
         pass

@@ -45,3 +45,8 @@ class State:
     def get_state(cls, construction, contamination):
         # Using a tuple as a key allows for a single lookup
         return cls._LOOKUP.get((construction, contamination))
+
+
+class Group:
+    GROUP_A = 0
+    GROUP_B = 1

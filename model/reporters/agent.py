@@ -41,10 +41,6 @@ class ModelReporter:
 model_reporters_base = {
     "frequency": ModelReporter(property_name="tally.__frequency__"),
     "contamination": ModelReporter(property_name="tally.__contamination__"),
-    "contamination_mean": ModelReporter(property_name="tally.__contamination_mean__"),
-    "contamination_median": ModelReporter(
-        property_name="tally.__contamination_median__"
-    ),
 }
 
 # Create a specialised tracking function depending on:

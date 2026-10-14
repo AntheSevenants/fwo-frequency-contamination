@@ -15,9 +15,9 @@ contamination_indices = np.array([contamination_idx_a, contamination_idx_b], dty
 
 
 class Tally:
-    def __init__(self, num_words: int):
+    def __init__(self):
         # Build frequency tallies
-        self.frequency: np.ndarray = np.zeros((num_words, model.enums.State._COUNT))
+        self.frequency: np.ndarray = np.zeros(model.enums.State._COUNT)
 
         regular_indices = np.array(
             [
@@ -30,13 +30,13 @@ class Tally:
             ]
         )
         # Set starting frequency to one for all "regular" occurrences
-        self.frequency[:, regular_indices] = 1
+        self.frequency[regular_indices] = 1
 
-    def update(self, word_index: int, construction: int, contamination: int):
+    def update(self, construction: int, contamination: int):
         column_idx = model.enums.State.get_state(construction, contamination)
 
         # TODO: perhaps implement lateral inhibition
-        self.frequency[word_index, column_idx] += 1
+        self.frequency[column_idx] += 1
 
         # Invalidate cache
         if "__frequency__" in self.__dict__:
@@ -46,7 +46,7 @@ class Tally:
             del self.__dict__["__contamination__"]
 
     def get_production_counts(
-        self, word_index: int, construction: int
+        self, construction: int
     ) -> Tuple[Tuple[int, int], np.ndarray]:
         contamination_idx = model.enums.State.get_state(
             construction, model.enums.Contamination.CONTAMINATED
@@ -59,10 +59,10 @@ class Tally:
         return (
             model.enums.Contamination.CONTAMINATED,
             model.enums.Contamination.NONE,
-        ), self.frequency[word_index, indices]
+        ), self.frequency[indices]
 
     def get_reception_counts(
-        self, word_index: int, construction: int, contamination: int
+        self, construction: int, contamination: int
     ) -> Tuple[Tuple[Tuple[int, int], Tuple[int, int]], np.ndarray]:
         real_profile = (construction, contamination)
         confusion_profile = (
@@ -73,43 +73,17 @@ class Tally:
         confusion_idx = model.enums.State.get_state(*confusion_profile)
 
         indices = np.array([real_idx, confusion_idx], dtype=int)
-        return (real_profile, confusion_profile), self.frequency[word_index, indices]
+        return (real_profile, confusion_profile), self.frequency[indices]
 
     @cached_property
     def __frequency__(self) -> np.ndarray:
         return self.frequency
 
-    @property
-    def __frequency_mean__(self) -> np.ndarray:
-        return np.mean(self.__frequency__, axis=0)
-
-    @property
-    def __frequency_median__(self) -> np.ndarray:
-        return np.median(self.__frequency__, axis=0)
-
     @cached_property
     def __contamination__(self) -> np.ndarray:
-        matrix = self.__frequency__
+        a1, a2 = self.__frequency__[0], self.__frequency__[1]
+        b1, b2 = self.__frequency__[2], self.__frequency__[3]
 
-        # Reshape to (rows, number_of_pairs, 2)
-        reshaped = matrix.reshape(matrix.shape[0], -1, 2)
-
-        # Calculate the sum of each pair along the last axis
-        pair_sums = reshaped.sum(axis=2, keepdims=True)
-
-        # Divide the reshaped matrix by the sums,
-        # reshape back to original
-        result = (reshaped / pair_sums).reshape(matrix.shape)
-
-        # Now, only get the contamination values
-        contamination_shares = result[:, contamination_indices]
+        contamination_shares = np.array([a2 / (a1 + a2), b2 / (b1 + b2)])
 
         return contamination_shares
-
-    @property
-    def __contamination_mean__(self) -> np.ndarray:
-        return np.mean(self.__contamination__, axis=0)
-
-    @property
-    def __contamination_median__(self) -> np.ndarray:
-        return np.median(self.__contamination__, axis=0)

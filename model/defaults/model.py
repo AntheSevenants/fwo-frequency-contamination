@@ -26,15 +26,14 @@ class Parameters:
     datacollector_step_size: int = 1
 
     # ----
-    # Vocabulary
+    # Construction info
     # ----
-    vocabulary: (
-        model.constructions.vocab.FlatVocabulary
-        | model.constructions.vocab.PreciseVocabulary
-        | model.constructions.vocab.SampledVocabulary
-    ) = model.constructions.vocab.FlatVocabulary(100, 0.5, 0.5, 0.5)
+    a_prior: float = 0.4
+    b_prior: float = 0.4
+    ambiguity_prob: float = 0.5
+    base_non_s: float = 0.2
 
-    priors_enabled: bool = True
+    # TODO: add different groups here as well
 
     # ----
     # Agent age
@@ -54,12 +53,5 @@ class Parameters:
         # Initialise random number generator
         self.nprandom = np.random.default_rng(self.seed)
 
-        # Initialise priors for sampled vocabulary
-        if isinstance(self.vocabulary, model.constructions.vocab.SampledVocabulary):
-            self.vocabulary._initialise(self.nprandom)
-
-        # Compute the priors for the loaded vocabulary
-        self.vocabulary.set_priors()
-
-        # Indices
-        self.word_indices: List[int] = list(range(0, self.vocabulary.num_words))
+        if self.a_prior + self.b_prior > 1:
+            raise Exception("A and B prior sum cannot exceed 1")

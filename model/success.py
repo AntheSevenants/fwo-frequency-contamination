@@ -3,48 +3,48 @@ import numpy as np
 import model.enums
 
 from model.enums import to_dict
-from typing import Any, Optional, TYPE_CHECKING
+from typing import Any, List, Optional, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from model.model import ContaminationModel
 
 
 class CommunicationResult:
-    FAILURE = 0
+    FAILURE_CONTAMINATION = 0
     SUCCESS = 1
-    UNCERTAIN = 2
-
-
-# TODO: change
-class CommunicationContext:
-    ANY = 0
-    NOT_REDUCING_NOT_REENTRANT = 1
-    REDUCING = 2
-    REENTRANCE = 3
 
 
 class CommunicativeSuccess:
-    def __init__(self, model: "ContaminationModel"):
-        self.model = model
-        self.contexts = list(to_dict(CommunicationContext).values())
-        self.results = list(to_dict(CommunicationResult).values())
+    def __init__(self, contamination_model: "ContaminationModel"):
+        self.contamination_model = contamination_model
 
     def reset(self):
         self.outcomes = np.zeros(
             (
-                len(self.contexts),
-                self.model.params.vocabulary.num_words,
-                len(self.results),
+                len(list(to_dict(model.enums.Group).values())),
+                model.enums.State._COUNT,  # intention
+                model.enums.State._COUNT,  # outcome
             )
         )
 
     def register_communication_outcome(
-        self, communication_result: int, true_index: int, communication_context: int
+        self, group: int, construction: int, contamination: int
     ):
-        self.outcomes[communication_context, true_index, communication_result] += 1
+        self.outcomes[group, construction, contamination] += 1
 
-    def get_percentages_per_ctx(self, communication_context: int):
-        counts = self.outcomes[communication_context]
+    def get_confusion_matrix_by_group(self, group: int) -> np.ndarray:
+        return self.outcomes[group]
+
+    def get_confusion_matrix_normalised(self, weights: List[float]):
+        if self.outcomes.shape[0] != len(weights):
+            raise ValueError(
+                f"Weights should have same length as number of groups: {self.outcomes.shape[0]}"
+            )
+
+        return np.average(self.outcomes, axis=0, weights=weights)
+
+    def get_percentages_per_ctx(self, group: int) -> np.ndarray:
+        counts = self.outcomes[group]
 
         with np.errstate(divide="ignore", invalid="ignore"):
             shares_per_ctx = np.true_divide(counts, np.sum(counts))
