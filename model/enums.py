@@ -42,9 +42,9 @@ class State:
     _COUNT = 4
 
     @classmethod
-    def get_state(cls, construction, contamination):
+    def get_state(cls, construction, contamination) -> int:
         # Using a tuple as a key allows for a single lookup
-        return cls._LOOKUP.get((construction, contamination))
+        return cls._LOOKUP[(construction, contamination)]
 
 
 class Group:

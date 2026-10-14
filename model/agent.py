@@ -129,9 +129,17 @@ class ContaminationAgent(mesa.Agent):
             heard_profile = (construction, contamination)
 
         self.atts.tally.update(*heard_profile)
+        self.track_communication((construction, contamination), heard_profile)
 
-    def track_communication(self):
-        pass
+    def track_communication(
+        self, intended_profile: Tuple[int, int], heard_profile: Tuple[int, int]
+    ):
+        intended_state = model.enums.State.get_state(*intended_profile)
+        heard_state = model.enums.State.get_state(*heard_profile)
+
+        self.model.tracker.communicative_success.register_communication_outcome(
+            self.atts.group, intended_state, heard_state
+        )
 
     @property
     def is_dead(self):

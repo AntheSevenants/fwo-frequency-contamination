@@ -28,9 +28,9 @@ class CommunicativeSuccess:
         )
 
     def register_communication_outcome(
-        self, group: int, construction: int, contamination: int
+        self, group: int, intended_state: int, heard_state: int
     ):
-        self.outcomes[group, construction, contamination] += 1
+        self.outcomes[group, intended_state, heard_state] += 1
 
     def get_confusion_matrix_by_group(self, group: int) -> np.ndarray:
         return self.outcomes[group]
