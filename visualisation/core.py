@@ -524,6 +524,7 @@ def plot_value(
 def plot_ratio(
     data: Union[model.model.ContaminationModel, List[List[float]]],
     attributes: Union[str, List[str]],
+    filter_dimension: int | None = None,
     ylim: List[float] = [0, 1],
     x_scale_factor: int = 1,
     ax: Optional[matplotlib.axes.Axes] = None,
@@ -548,6 +549,7 @@ def plot_ratio(
     Args:
         data (Union[model.model.ContaminationModel, List[List[float]]): Either a model instance or a list of values
         attributes (Union[str, List[str]]): The names of the series to model. Always supply, even if input data is not a model, so dimensionality of the data can be assessed.
+        filter_dimension (int | None): Only plot one specific dimension of the array. Defaults to None.
         ylim (List[float], optional): The expected range of values, will be the y axis. Defaults to [0, 1].
         x_scale_factor (int, optional): The factor to scale the x axis ticks by. Defaults to 1.
         ax (Optional[matplotlib.axes.Axes], optional): A pre-existing axis. Pass if you are building a multi-plot. Defaults to None.
@@ -590,31 +592,36 @@ def plot_ratio(
 
     multi_group_context = get_multi_group_context(aggregate_extension_x is not None)
 
+    # Reduce dimensionality if necessary
+    matrix_dimensionality = len(value_lists[0].shape)
+    if filter_dimension is None and matrix_dimensionality == 3:
+        raise Exception(
+            "Matrix shape cannot be 3D while filter dimension is unset. A filter dimension is needed to reduce the dimensionality of the matrix."
+        )
+    elif filter_dimension is not None and matrix_dimensionality == 3:
+        value_lists = [value_list[:, :, filter_dimension] for value_list in value_lists]
+        if _min_data is not None:
+            _min_data = _min_data[:, :, :, filter_dimension]
+        if _max_data is not None:
+            _max_data = _max_data[:, :, :, filter_dimension]
+
     for attribute_idx, matrix in enumerate(value_lists):
         for i in range(matrix.shape[1]):
             # Line colour normally indicates the construction
             # Across parameter combinations, we only show the innovative construction
             # so here line colour can encode a specific parameter value
             if legend_colours is None:
-                line_colour = (
-                    COLOURS[i]
-                    if multi_group_context == MultiGroupContext.CONSERVATOR_INNOVATOR
-                    else COLOURS[attribute_idx]
-                )
+                line_colour = get_colour(i)
             else:
                 line_colour = legend_colours[attribute_idx]
 
             if legend_styles is None:
-                line_style = get_line_style_by_group_context(
-                    attribute_idx, num_groups, multi_group_context
-                )
+                line_style = LINE_STYLES[attribute_idx]
             else:
                 line_style = legend_styles[attribute_idx]
 
             if legend_colour_labels is None:
-                legend_label = make_legend_label_by_group_context(
-                    attribute_idx, i, aggregate_extension_x
-                )
+                legend_label = f"#{attribute_idx}"
             else:
                 if legend_style_labels is None:
                     legend_label = legend_colour_labels[attribute_idx]
@@ -832,6 +839,8 @@ def plot_error_bar(
 
         # Get the data from the right step
         value_list = value_list[_step, :]
+
+        # TODO: make this work with two-dimensional data
 
         __min_data, __max_data = None, None
         if _min_data is not None:

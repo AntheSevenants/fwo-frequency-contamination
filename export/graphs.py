@@ -227,9 +227,17 @@ graph_configs: Dict[str, GraphConfig | MosaicConfig] = {
         aggregate_extension=True,
         interactive_args=["step"],
     ),
+    "contamination_mean_per_ctx": GraphConfig(
+        reporter_name="contamination",
+        plot_func=visualisation.contamination.plot_contamination_per_ctx,
+        common_args=["min_data", "max_data"],
+        extra_args={"y_max": 1, "filter_dimension": 0},
+        aggregate_extension=True,
+        interactive_args=["step"],
+    ),
     "contamination_mosaic": MosaicConfig(
         layout=[
-            ["contamination_mean", "contamination_mean"],
+            ["contamination_mean", "contamination_mean_per_ctx"],
         ],
         aggregate_extension=True,
         size=(12, 6),
