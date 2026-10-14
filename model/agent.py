@@ -45,11 +45,18 @@ class ContaminationAgent(mesa.Agent):
         else:
             age = None
 
+        if type(self.model.params.base_contaminated) == list:
+            base_contaminated = self.model.params.base_contaminated[group]
+        elif type(self.model.params.base_contaminated) == float:
+            base_contaminated = self.model.params.base_contaminated
+        else:
+            raise TypeError("base_contaminated parameter is wrong type")
+
         # Populate the agent's parameters based off the model parameters
         self.atts = model.defaults.agent.Attributes(
             model_params=self.model.params,
             group=group,
-            base_non_s=self.model.params.base_non_s,
+            base_contaminated=base_contaminated,
             max_age=age,
         )
 

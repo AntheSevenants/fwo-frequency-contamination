@@ -31,7 +31,8 @@ class Parameters:
     a_prior: float = 0.4
     b_prior: float = 0.4
     ambiguity_prob: float = 0.5
-    base_non_s: float = 0.2
+    # How much do agents already have experience with contaminated forms?
+    base_contaminated: float | List[float] = 0.0
 
     # ----
     # Group information

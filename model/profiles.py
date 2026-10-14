@@ -9,11 +9,9 @@ params = {
             "num_agents": 10,
             "parsing_mode": [
                 model.constructions.parsing.ExactParsing(),
-                model.constructions.parsing.LazyParsing(0),
-                model.constructions.parsing.LazyParsing(1),
-                model.constructions.parsing.LazyParsing(10),
             ],
             "a_group_share": 0.5,
+            "base_contaminated": [[0.2, 0]],
         },
         child_params={},
     )

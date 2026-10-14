@@ -14,7 +14,7 @@ class Attributes:
     model_params: model.defaults.model.Parameters
 
     group: int
-    base_non_s: float
+    base_contaminated: float
 
     max_age: int | None
     age: int = 0  # How old is the agent currently?
@@ -26,7 +26,7 @@ class Attributes:
             raise ValueError("Model parameters cannot be None")
 
         # Make a deepcopy of the vocabulary
-        self.tally = model.constructions.tally.Tally()
+        self.tally = model.constructions.tally.Tally(self.base_contaminated)
 
         # Prepare for construction choice
         self.choices = [model.enums.Construction.A, model.enums.Construction.B, None]
