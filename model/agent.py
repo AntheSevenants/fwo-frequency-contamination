@@ -70,7 +70,8 @@ class ContaminationAgent(mesa.Agent):
         self.atts.age += 1
 
         # Choose a random other agent that is not the agent itself
-        hearer_agent = self.model.get_random_agent(self)
+        group = self.atts.group if self.model.params.group_distinction else None
+        hearer_agent = self.model.get_random_agent(self, group=group)
 
         # If there *is* an interaction, do interact
         self.interact(hearer_agent)

@@ -58,6 +58,9 @@ class Parameters:
         # Initialise random number generator
         self.nprandom = np.random.default_rng(self.seed)
 
+        # Is there a group distinction?
+        self.group_distinction = self.a_group_share not in [0, 1]
+
         # If homophily is set and a_group_share is 0 or 1, the parameter does not make sense
         if self.homophily is not None and self.a_group_share in [0, 1]:
             raise ValueError("Homophily cannot be set if group share is 0 or 1")
