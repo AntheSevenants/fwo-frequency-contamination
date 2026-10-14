@@ -645,6 +645,10 @@ def plot_ratio(
                     alpha=0.2,
                 )
 
+            # Also break when explicitly asked in a 2D context
+            if filter_dimension is not None and matrix_dimensionality == 2:
+                break
+
             # Only show the innovative form in an aggregate extension graph
             if multi_group_context == MultiGroupContext.AGGREGATE_EXTENSION:
                 break

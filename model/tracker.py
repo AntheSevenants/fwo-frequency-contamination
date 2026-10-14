@@ -7,6 +7,7 @@ from typing import Any, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from model.model import ContaminationModel
+    from model.agent import ContaminationAgent
 
 
 def get_nested_attr(obj: object, attr_path: str) -> Any:
@@ -113,11 +114,14 @@ class Tracker:
 
         return np.median(value)
 
-    def get_property_per_agent(self, property_name: str, index: int | None = None):
+    def get_property_per_agent(
+        self, property_name: str, group: int | None = None, index: int | None = None
+    ):
         """Retrieve a list of property values of each agent. If a property is multi-dimensional, you can ask to retrieve the value of one of the dimensions.
 
         Args:
             property_name (str): The name of the property that should be retrieved for each agent.
+            group (int): What group to get this property for. Defaults to None (= all).
             index (int, optional): The index of the multi-dimensional value that should be retrieved, if multi-dimensional. Returns entire list if None. Defaults to None.
 
         Returns:
@@ -128,6 +132,13 @@ class Tracker:
 
         # Get the property for each agent
         for agent in self.model.agents:
+            # For the type checker
+            agent: "ContaminationAgent"
+
+            # Only get the correct type
+            if group is not None and agent.atts.group != group:
+                continue
+
             property_value = get_nested_attr(agent.atts, property_name)
             if index is not None:
                 property_value = property_value[index]
@@ -139,38 +150,58 @@ class Tracker:
     def get_property_mean_across_agents(
         self,
         property_name: str,
+        group: int | None = None,
         index: int | None = None,
     ):
         """Retrieve the mean of a requested property value across agents. If a property is multi-dimensional, you can ask to take the mean of the values of just one of the dimensions.
 
         Args:
             property_name (str): The name of the property that should be retrieved for each agent.
+            group (int): What group to get this property for. Defaults to None (= all).
             index (int): The index of the multi-dimensional value that should be retrieved, if multi-dimensional. Returns entire list if None. Defaults to None.
 
         Returns:
             float: A number of the mean of the value
         """
 
-        agent_property_dist = self.get_property_per_agent(property_name, index=index)
+        agent_property_dist = self.get_property_per_agent(
+            property_name, index=index, group=group
+        )
+
+        # Check distribution before running mean
+        if agent_property_dist.size == 0:
+            raise ValueError(
+                "The group for which the property mean was computed is empty."
+            )
 
         return agent_property_dist.mean(axis=0)
 
     def get_property_median_across_agents(
         self,
         property_name: str,
+        group: int | None = None,
         index: int | None = None,
     ):
         """Retrieve the median of a requested property value across agents. If a property is multi-dimensional, you can ask to take the median of the values of just one of the dimensions.
 
         Args:
             property_name (str): The name of the property that should be retrieved for each agent.
+            group (int): What group to get this property for. Defaults to None (= all).
             index (int): The index of the multi-dimensional value that should be retrieved, if multi-dimensional. Returns entire list if None. Defaults to None.
 
         Returns:
             float: A number of the median of the value
         """
 
-        agent_property_dist = self.get_property_per_agent(property_name, index=index)
+        agent_property_dist = self.get_property_per_agent(
+            property_name, index=index, group=group
+        )
+
+        # Check distribution before running mean
+        if agent_property_dist.size == 0:
+            raise ValueError(
+                "The group for which the property mean was computed is empty."
+            )
 
         return np.median(agent_property_dist, axis=0)
 

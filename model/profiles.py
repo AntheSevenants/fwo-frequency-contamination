@@ -13,6 +13,7 @@ params = {
                 model.constructions.parsing.LazyParsing(1),
                 model.constructions.parsing.LazyParsing(10),
             ],
+            "a_group_share": 0.5,
         },
         child_params={},
     )

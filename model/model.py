@@ -50,9 +50,13 @@ class ContaminationModel(mesa.Model):
         # Model data collection
         self.tracker = model.tracker.Tracker(self)
 
-        # Initialise the agent model reporters (no innovator/conservator share in this model)
+        # Initialise the agent model reporters
+        for_all_types = self.params.a_group_share not in [
+            0,
+            1,
+        ]  # is there a group distinction?
         model_reporters_agents = model.reporters.agent.get_model_reporters(
-            for_all_types=False
+            for_all_types=for_all_types
         )
         # Initialise the model model reporters
         model_reporters_model = model.reporters.model.get_model_reporters()

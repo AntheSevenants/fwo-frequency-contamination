@@ -1,6 +1,8 @@
 from dataclasses import dataclass, asdict, field
 from typing import List, Callable, Dict, TYPE_CHECKING
 
+from model.enums import Group
+
 if TYPE_CHECKING:
     from model.model import ContaminationModel
 
@@ -19,7 +21,7 @@ class ReporterType:
 class AgentType:
     INNOVATOR = 0
     CONSERVATOR = 1
-    ALL = 2
+    ALL = None
 
 
 # Definition of a single model reporter
@@ -51,29 +53,29 @@ model_reporters_base = {
 function_translation: Dict[
     int,
     Callable[
-        [str, int | None, bool | None], Callable[["ContaminationModel"], np.ndarray]
+        [str, int | None, int | None], Callable[["ContaminationModel"], np.ndarray]
     ],
 ] = {
-    ReporterType.SINGULAR: lambda property_name, index, for_innovator: lambda model: model.tracker.get_property_per_agent(
+    ReporterType.SINGULAR: lambda property_name, index, group: lambda model: model.tracker.get_property_per_agent(
         property_name,
         index=index,
-        # for_innovator=for_innovator,
+        group=group,
     ),
-    ReporterType.MEAN: lambda property_name, index, for_innovator: lambda model: model.tracker.get_property_mean_across_agents(
+    ReporterType.MEAN: lambda property_name, index, group: lambda model: model.tracker.get_property_mean_across_agents(
         property_name,
         index=index,
-        # for_innovator=for_innovator,
+        group=group,
     ),
-    ReporterType.MEDIAN: lambda property_name, index, for_innovator: lambda model: model.tracker.get_property_median_across_agents(
+    ReporterType.MEDIAN: lambda property_name, index, group: lambda model: model.tracker.get_property_median_across_agents(
         property_name,
         index=index,
-        # for_innovator=for_innovator,
+        group=group,
     ),
-    ReporterType.STD: lambda property_name, index, for_innovator: lambda model: np.std(
+    ReporterType.STD: lambda property_name, index, group: lambda model: np.std(
         model.tracker.get_property_per_agent(
             property_name,
             index=index,
-            # for_innovator=for_innovator,
+            group=group,
         ),
         axis=0,
     ),
@@ -81,8 +83,8 @@ function_translation: Dict[
 
 # For the reporter keys
 agent_type_translation = {
-    AgentType.INNOVATOR: "_innovator",
-    AgentType.CONSERVATOR: "_conservator",
+    Group.GROUP_A: "_A",
+    Group.GROUP_B: "_B",
     AgentType.ALL: "",
 }
 
@@ -103,14 +105,14 @@ agent_type_arg_translation = {
 
 
 def get_model_reporter_key(
-    reporter_name: str, reporter_type: int, agent_type: int
+    reporter_name: str, reporter_type: int, agent_type: int | None
 ) -> str:
     """Generates a unique key for a model reporter based on the given parameters.
 
     Args:
         reporter_name (str): The name of the reporter.
         reporter_type (int): The type of the reporter, will be translated to its corresponding string representation.
-        agent_type (int): The type of the agent, will be be translated to its corresponding string representation.
+        agent_type (int | None): The type of the agent, will be be translated to its corresponding string representation.
 
     Returns:
         str: The generated key, a concatenation of the reporter name, the string representation of the reporter type,
@@ -124,24 +126,29 @@ def get_model_reporter_key(
 
 
 def get_model_reporter_function(
-    reporter_type: int, property_name: str, agent_type: int, property_index: int | None
+    reporter_type: int,
+    property_name: str,
+    agent_type: int | None,
+    property_index: int | None,
 ) -> Callable[["ContaminationModel"], np.ndarray]:
     """Builds the appropriate lambda function for a model reporter based on the given parameters.
 
     Args:
         reporter_type (int): The type of the reporter, which determines what tracker function is called.
         property_name (str): The name of the tracked property to be processed.
-        agent_type (int): The type of the agent (innovator / conservator / none).
+        agent_type (int | None): The type of the agent (group / all groups).
         property_index (int | None): The index of the property, if necessary. Defaults to None.
 
     Returns:
         Callable: The model reporter function built from the given parameters.
     """
 
-    agent_type_arg_translation_ = agent_type_arg_translation[agent_type]
+    # In the new implementation, there is no group translation anymore. We use the raw ints to index a group.
+    # But I'm leaving this comment on how things used to go in case I forget.
+    # agent_type_arg_translation_ = agent_type_arg_translation[agent_type]
 
     return function_translation[reporter_type](
-        property_name, property_index, agent_type_arg_translation_
+        property_name, property_index, agent_type
     )
 
 
@@ -161,7 +168,7 @@ def get_model_reporters(
     for model_reporter_name in model_reporters_base:
         model_reporter_config = model_reporters_base[model_reporter_name]
 
-        agent_types = [AgentType.INNOVATOR, AgentType.CONSERVATOR, AgentType.ALL]
+        agent_types: List[int | None] = [Group.GROUP_A, Group.GROUP_B, AgentType.ALL]
         if not for_all_types:
             agent_types = [AgentType.ALL]
 

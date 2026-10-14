@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
 
+import model.enums
 import model.reporters.agent
 import model.reporters.model
 
@@ -42,7 +43,7 @@ class GraphConfig:
     )
     reporter_type: int = model.reporters.agent.ReporterType.MEAN  # MEAN, MEDIAN, NONE
     data_columns: List[str] = field(default_factory=lambda: [])
-    agent_types: List[int] = field(
+    agent_types: List[int | None] = field(
         default_factory=lambda: [model.reporters.agent.AgentType.ALL]
     )
     # Shorthands for common operations that are given to plot functions.
@@ -224,7 +225,9 @@ graph_configs: Dict[str, GraphConfig | MosaicConfig] = {
     "contamination": GraphConfig(
         reporter_name="contamination",
         plot_func=visualisation.contamination.plot_contamination,
+        agent_types=[model.enums.Group.GROUP_A, model.enums.Group.GROUP_B],
         common_args=["x_scale_factor", "min_data", "max_data"],
+        extra_args={"filter_dimension": 0},
         aggregate_extension=True,
         interactive_args=["step"],
     ),
@@ -633,10 +636,10 @@ def generate_inner_lambda(
     is_regular_graph = aggregate_config is None or config.aggregate_extension
 
     if is_regular_graph:
-        # You cannot have both innovators/conservators and an aggregate extension
-        if config.aggregate_extension and len(config.data_columns) > 1:
+        # You cannot have both a group distinction and an aggregate extension
+        if aggregate_config is not None and len(config.data_columns) > 1:
             raise ValueError(
-                "Cannot build aggregate extension graph if innovators_share > 0. This is an architectural decision, and no mistake on your behalf."
+                "Cannot build aggregate extension graph if group_share_a > 0. This is an architectural decision, and no mistake on your behalf."
             )
 
         central_data = []
