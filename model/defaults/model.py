@@ -33,7 +33,11 @@ class Parameters:
     ambiguity_prob: float = 0.5
     base_non_s: float = 0.2
 
+    # ----
+    # Group information
+    # ----
     a_group_share: float = 1
+    homophily: List[float] | None = None
 
     # ----
     # Agent age
@@ -52,6 +56,14 @@ class Parameters:
     def __post_init__(self):
         # Initialise random number generator
         self.nprandom = np.random.default_rng(self.seed)
+
+        # If homophily is set and a_group_share is 0 or 1, the parameter does not make sense
+        if self.homophily is not None and self.a_group_share in [0, 1]:
+            raise ValueError("Homophily cannot be set if group share is 0 or 1")
+
+        if self.homophily is not None:
+            if len(self.homophily) != 2:
+                raise ValueError("Homophily should be a list of length 2")
 
         if self.a_prior + self.b_prior > 1:
             raise Exception("A and B prior sum cannot exceed 1")

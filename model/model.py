@@ -93,12 +93,41 @@ class ContaminationModel(mesa.Model):
             dead_agent.remove()
 
     def get_random_agent(
-        self, speaker_agent: "ContaminationAgent"
+        self, speaker_agent: "ContaminationAgent", group: int | None = None
     ) -> "ContaminationAgent":
-        # Choose a random other agent that is not the agent itself
-        while True:
-            hearer_agent: ContaminationAgent = self.random.choice(self.agents)
-            if speaker_agent != hearer_agent and not hearer_agent.is_dead:
-                break
+        """Choose a random other agnet that is not the agent itself. Pass a group to influence the choice based on preference for the own group.
 
-        return hearer_agent
+        Args:
+            speaker_agent (ContaminationAgent): The speaker agent. Needs to be passed to prevent communication with self.
+            group (int | None): The group to which the agent belongs. When not None, the agent will take into account preference for the own group. Defaults to None.
+
+        Returns:
+            ContaminationAgent: The future hearer agent
+        """
+
+        # We start with equal distribution btwx the groups
+        homophily_weights = [1.0, 1.0]
+        if self.params.homophily is not None and group is not None:
+            homophily_weights[group] = (
+                homophily_weights[group]
+                + homophily_weights[group] * self.params.homophily[group]
+            )
+
+        # First, filter the candidate agents for eligibility
+        candidates: List["ContaminationAgent"] = [
+            a for a in self.agents if a != speaker_agent and not a.is_dead
+        ]
+
+        if not candidates:
+            raise Exception("No agents pool to select from")
+
+        # Assign weights based on group membership
+        weights = np.array(
+            [1 * homophily_weights[agent.atts.group] for agent in candidates]
+        )
+        weights /= np.sum(weights)
+
+        # Perform weighted selection
+        hearer_agent = self.nprandom.choice(len(candidates), p=weights)
+
+        return candidates[hearer_agent]
