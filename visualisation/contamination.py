@@ -31,7 +31,7 @@ def plot_contamination_mean(
     )
 
 
-def plot_ctx_probs_for_agent(
+def plot_contamination_mean_per_agent(
     data: Union[model.model.ContaminationModel, List[List[float]]],
     attribute: str = "contamination_mean_per_agent",
     agent_index: Optional[int] = None,
