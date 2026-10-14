@@ -19,20 +19,18 @@ if TYPE_CHECKING:
 class ContaminationAgent(mesa.Agent):
     """A speaker in the model"""
 
-    def __init__(
-        self,
-        Contamination_model: "ContaminationModel",
-    ):
+    def __init__(self, contamination_model: "ContaminationModel", group: int):
         """Initialise an ContaminationModel agent
 
         Args:
-            Contamination_model (ContaminationModel):
+            contamination_model (ContaminationModel):
             The ContaminationModel for which the agent is initialised
+            group: The group to which the agent belongs.
         """
 
         # Pass the parameters to the parent class.
         self.model: "ContaminationModel"
-        super().__init__(Contamination_model)
+        super().__init__(contamination_model)
 
         # Compute agent's age
         if self.model.params.agent_age_mean != 0:
@@ -50,7 +48,7 @@ class ContaminationAgent(mesa.Agent):
         # Populate the agent's parameters based off the model parameters
         self.atts = model.defaults.agent.Attributes(
             model_params=self.model.params,
-            group=model.enums.Group.GROUP_A,
+            group=group,
             base_non_s=self.model.params.base_non_s,
             max_age=age,
         )

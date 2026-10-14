@@ -35,9 +35,16 @@ class ContaminationModel(mesa.Model):
         super().__init__(rng=self.params.seed)
         self.nprandom = np.random.default_rng(self.params.seed)
 
+        # Calculate the number of innovators and imitators
+        num_a = round(self.params.num_agents * self.params.a_group_share)
+        num_b = self.params.num_agents - num_a
+        agent_types = [model.enums.Group.GROUP_A] * num_a + [
+            model.enums.Group.GROUP_B
+        ] * num_b
+
         # Agents
         agents = model.agent.ContaminationAgent.create_agents(
-            model=self, n=self.params.num_agents
+            model=self, n=self.params.num_agents, group=agent_types
         )
 
         # Model data collection

@@ -33,7 +33,6 @@ class Parameters:
     ambiguity_prob: float = 0.5
     base_non_s: float = 0.2
 
-    # TODO: add different groups here as well
     a_group_share: float = 1
 
     # ----
