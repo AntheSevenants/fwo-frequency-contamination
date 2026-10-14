@@ -30,5 +30,7 @@ def plot_confusion(
         data,
         attributes,
         title=f"Confusion matrix across agents",
+        x_label="Intended",
+        y_label="Perceived",
         **kwargs,
     )

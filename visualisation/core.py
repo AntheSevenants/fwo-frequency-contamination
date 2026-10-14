@@ -1165,6 +1165,21 @@ def plot_confusion(
     normalized_confusion_matrix = np.where(row_sums > 0, matrix / row_sums, 0)
     ax.matshow(normalized_confusion_matrix[0:_n, 0:_n])
 
+    print(matrix)
+
+    # Print counts
+    for i in range(_n):
+        for j in range(_n):
+            # Get count from the confusion matrix
+            count = matrix[i, j]
+
+            # Determine color based on background darkness for readability
+            # We check the normalized value to decide if text should be white or black
+            color = "white" if normalized_confusion_matrix[i, j] < 0.5 else "black"
+
+            # x is the column index, y is the row index
+            ax.text(j, i, f"{count}", ha="center", va="center", color=color)
+
     ax.set_xticks(range(_n))
     ax.set_yticks(range(_n))
 
