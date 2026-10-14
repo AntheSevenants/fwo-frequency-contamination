@@ -1165,6 +1165,12 @@ def plot_confusion(
     normalized_confusion_matrix = matrix / row_sums
     ax.matshow(normalized_confusion_matrix[0:_n, 0:_n])
 
+    ax.set_xticks(range(_n))
+    ax.set_yticks(range(_n))
+
+    ax.set_xticklabels(["A/", "AC", "B/", "BC"])
+    ax.set_yticklabels(["A/", "AC", "B/", "BC"])
+
     if x_label is not None:
         ax.set_xlabel(x_label)
     if y_label is not None:
