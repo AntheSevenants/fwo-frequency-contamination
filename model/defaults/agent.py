@@ -13,6 +13,7 @@ import model.enums
 class Attributes:
     model_params: model.defaults.model.Parameters
 
+    group: int
     base_non_s: float
 
     max_age: int | None

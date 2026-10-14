@@ -17,6 +17,7 @@ import export.combinations
 
 import batch.aggregate
 import visualisation.contamination
+import visualisation.communication
 import visualisation.multiplot
 
 
@@ -233,6 +234,17 @@ graph_configs: Dict[str, GraphConfig | MosaicConfig] = {
         ],
         aggregate_extension=True,
         size=(12, 6),
+    ),
+    "communicative_confusion": GraphConfig(
+        context=GraphContext.ANY,
+        reporter_name="confusion_matrix",
+        model_reporter=True,
+        reporter_type=model.reporters.model.ReporterType.AS_IS,
+        plot_func=visualisation.communication.plot_confusion,
+        # TODO: re-introduce min_data and max_data once the graph type has been changed
+        # common_args=["x_scale_factor"],
+        interactive_args=["step"],
+        aggregate_extension=False,
     ),
 }
 

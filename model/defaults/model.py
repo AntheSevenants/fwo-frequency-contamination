@@ -34,6 +34,7 @@ class Parameters:
     base_non_s: float = 0.2
 
     # TODO: add different groups here as well
+    a_group_share: float = 1
 
     # ----
     # Agent age

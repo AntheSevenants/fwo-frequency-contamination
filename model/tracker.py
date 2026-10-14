@@ -53,6 +53,24 @@ class Tracker:
         self.communicative_success.reset()
         self.decision_entropy = []
 
+    @property
+    def __confusion_matrix_a__(self):
+        return self.communicative_success.get_confusion_matrix_by_group(
+            model.enums.Group.GROUP_A
+        )
+
+    @property
+    def __confusion_matrix_b__(self):
+        return self.communicative_success.get_confusion_matrix_by_group(
+            model.enums.Group.GROUP_B
+        )
+
+    @property
+    def __confusion_matrix__(self):
+        return self.communicative_success.get_confusion_matrix_normalised(
+            [self.model.params.a_group_share, 1 - self.model.params.a_group_share]
+        )
+
     def get_global(self, property_name):
         return getattr(self, property_name)
 

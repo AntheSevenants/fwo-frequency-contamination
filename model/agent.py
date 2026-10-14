@@ -50,6 +50,7 @@ class ContaminationAgent(mesa.Agent):
         # Populate the agent's parameters based off the model parameters
         self.atts = model.defaults.agent.Attributes(
             model_params=self.model.params,
+            group=model.enums.Group.GROUP_A,
             base_non_s=self.model.params.base_non_s,
             max_age=age,
         )
