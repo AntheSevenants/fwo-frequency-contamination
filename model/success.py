@@ -24,7 +24,8 @@ class CommunicativeSuccess:
                 len(list(to_dict(model.enums.Group).values())),
                 model.enums.State._COUNT,  # intention
                 model.enums.State._COUNT,  # outcome
-            )
+            ),
+            dtype=np.int64,
         )
 
     def register_communication_outcome(
