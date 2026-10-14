@@ -616,7 +616,9 @@ def plot_ratio(
                 line_colour = legend_colours[attribute_idx]
 
             if legend_styles is None:
-                line_style = LINE_STYLES[1 + attribute_idx]
+                line_style = get_line_style_by_group_context(
+                    attribute_idx, num_groups, multi_group_context
+                )
             else:
                 line_style = legend_styles[attribute_idx]
 
