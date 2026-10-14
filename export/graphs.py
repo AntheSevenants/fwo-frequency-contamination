@@ -220,24 +220,16 @@ def get_num_constructions(
 
 # These are all definitions of graphs
 graph_configs: Dict[str, GraphConfig | MosaicConfig] = {
-    "contamination_mean": GraphConfig(
-        reporter_name="contamination_mean",
-        plot_func=visualisation.contamination.plot_contamination_mean,
-        common_args=["x_scale_factor", "min_data", "max_data"],
-        aggregate_extension=True,
-        interactive_args=["step"],
-    ),
-    "contamination_mean_per_ctx": GraphConfig(
+    "contamination": GraphConfig(
         reporter_name="contamination",
-        plot_func=visualisation.contamination.plot_contamination_per_ctx,
-        common_args=["min_data", "max_data"],
-        extra_args={"y_max": 1, "filter_dimension": 0},
+        plot_func=visualisation.contamination.plot_contamination,
+        common_args=["x_scale_factor", "min_data", "max_data"],
         aggregate_extension=True,
         interactive_args=["step"],
     ),
     "contamination_mosaic": MosaicConfig(
         layout=[
-            ["contamination_mean", "contamination_mean_per_ctx"],
+            ["contamination", "contamination"],
         ],
         aggregate_extension=True,
         size=(12, 6),

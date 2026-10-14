@@ -129,10 +129,8 @@ class AggregateColumnConfig:
 
 
 aggregate_column_configs = {
-    "contamination_mean": AggregateColumnConfig(data_column="contamination_mean_mean"),
-    "contamination_median": AggregateColumnConfig(
-        data_column="contamination_median_median"
-    ),
+    "contamination_mean": AggregateColumnConfig(data_column="contamination_mean"),
+    "contamination_median": AggregateColumnConfig(data_column="contamination_median"),
 }
 
 
