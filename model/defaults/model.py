@@ -28,9 +28,10 @@ class Parameters:
     # ----
     # Construction info
     # ----
-    a_prior: float = 0.4
-    b_prior: float = 0.4
-    ambiguity_prob: float = 0.5
+    a_b_split: float = 0.4
+
+    ambiguity_prob: float | List[float] = 0.5
+
     # How much do agents already have experience with contaminated forms?
     base_contaminated: float | List[float] = 0.0
 
@@ -61,6 +62,17 @@ class Parameters:
         # Is there a group distinction?
         self.group_distinction = self.a_group_share not in [0, 1]
 
+        # Split into separate ambiguity probabilities
+        if type(self.ambiguity_prob) == float:
+            self.ambiguity_probs = [self.ambiguity_prob, self.ambiguity_prob]
+        elif type(self.ambiguity_prob) == List[float]:
+            if len(self.ambiguity_prob) != 2:
+                raise ValueError("ambiguity_prob should be length 2 if a list")
+
+            self.ambiguity_probs = self.ambiguity_prob
+        else:
+            raise TypeError("ambiguity_prob should be float or List[float] of size 2")
+
         # If homophily is set and a_group_share is 0 or 1, the parameter does not make sense
         if self.homophily is not None and self.a_group_share in [0, 1]:
             raise ValueError("Homophily cannot be set if group share is 0 or 1")
@@ -68,6 +80,3 @@ class Parameters:
         if self.homophily is not None:
             if len(self.homophily) != 2:
                 raise ValueError("Homophily should be a list of length 2")
-
-        if self.a_prior + self.b_prior > 1:
-            raise Exception("A and B prior sum cannot exceed 1")

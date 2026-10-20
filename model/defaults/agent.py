@@ -29,14 +29,15 @@ class Attributes:
         self.tally = model.constructions.tally.Tally(self.base_contaminated)
 
         # Prepare for construction choice
-        self.choices = [model.enums.Construction.A, model.enums.Construction.B, None]
-        probabilities = [self.model_params.a_prior, self.model_params.b_prior]
-        probabilities.append(1 - np.sum(probabilities))
+        self.choices = [model.enums.Construction.A, model.enums.Construction.B]
+        probabilities = [self.model_params.a_b_split, 1 - self.model_params.a_b_split]
 
         self.probabilities = np.array(probabilities)
 
-    def get_construction(self):
-        return self.model_params.nprandom.choice(self.choices, p=self.probabilities)
+    def get_construction(self) -> int:
+        return int(
+            self.model_params.nprandom.choice(self.choices, p=self.probabilities)
+        )
 
-    def get_ambiguity_prob(self, construction: int):
-        return self.model_params.ambiguity_prob
+    def get_ambiguity_prob(self, construction: int) -> float:
+        return self.model_params.ambiguity_probs[construction]

@@ -84,12 +84,6 @@ class ContaminationAgent(mesa.Agent):
         """
         # First, check whether we will communicate construction A or B, or nothing at all
         construction = self.atts.get_construction()
-        # If no construction is chosen, skip
-        if construction is None:
-            return
-        else:
-            # Cast as Python int explicitly
-            construction = int(construction)
 
         # Now, let's check whether the agent will produce a contaminated form
         # profiles = (contamination, contamination)
