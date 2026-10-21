@@ -26,6 +26,11 @@ class Parameters:
     datacollector_step_size: int = 1
 
     # ----
+    # Vocab
+    # ----
+    initial_vocab_size = 100
+
+    # ----
     # Construction info
     # ----
     a_b_split: float = 0.4

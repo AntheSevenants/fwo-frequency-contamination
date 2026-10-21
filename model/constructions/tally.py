@@ -15,30 +15,34 @@ contamination_indices = np.array([contamination_idx_a, contamination_idx_b], dty
 
 
 class Tally:
-    def __init__(self, base_contaminated: float):
+    def __init__(
+        self, base_contaminated: float, baseline_frequency: int, a_b_split: float
+    ):
         # Build frequency tallies
         self.frequency: np.ndarray = np.zeros(model.enums.State._COUNT)
 
-        baseline_frequency = 10
-        a_frequency_contaminated = round(baseline_frequency * base_contaminated)
-        a_frequency_none = baseline_frequency - a_frequency_contaminated
+        baseline_frequency_a = round(a_b_split * baseline_frequency)
+        baseline_frequency_b = baseline_frequency - baseline_frequency_a
+
+        frequency_contaminated_a = round(baseline_frequency_a * base_contaminated)
+        frequency_none_a = baseline_frequency_a - frequency_contaminated_a
 
         # Set starting frequency
         self.frequency[
             model.enums.State.get_state(
                 model.enums.Construction.A, model.enums.Contamination.NONE
             )
-        ] = a_frequency_none
+        ] = frequency_none_a
         self.frequency[
             model.enums.State.get_state(
                 model.enums.Construction.A, model.enums.Contamination.CONTAMINATED
             )
-        ] = a_frequency_contaminated
+        ] = frequency_contaminated_a
         self.frequency[
             model.enums.State.get_state(
                 model.enums.Construction.B, model.enums.Contamination.NONE
             )
-        ] = baseline_frequency
+        ] = baseline_frequency_b
 
     def update(self, construction: int, contamination: int):
         column_idx = model.enums.State.get_state(construction, contamination)

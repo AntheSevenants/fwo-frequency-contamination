@@ -26,7 +26,11 @@ class Attributes:
             raise ValueError("Model parameters cannot be None")
 
         # Make a deepcopy of the vocabulary
-        self.tally = model.constructions.tally.Tally(self.base_contaminated)
+        self.tally = model.constructions.tally.Tally(
+            self.base_contaminated,
+            self.model_params.initial_vocab_size,
+            self.model_params.a_b_split,
+        )
 
         # Prepare for construction choice
         self.choices = [model.enums.Construction.A, model.enums.Construction.B]
