@@ -225,7 +225,7 @@ graph_configs: Dict[str, GraphConfig | MosaicConfig] = {
     "contamination": GraphConfig(
         reporter_name="contamination",
         plot_func=visualisation.contamination.plot_contamination,
-        agent_types=[model.enums.Group.GROUP_A, model.enums.Group.GROUP_B],
+        # agent_types=[model.enums.Group.GROUP_A, model.enums.Group.GROUP_B],
         common_args=["x_scale_factor", "min_data", "max_data"],
         extra_args={"filter_dimension": 0},
         aggregate_extension=True,
