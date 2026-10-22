@@ -49,6 +49,9 @@ class ContaminationAgent(mesa.Agent):
             base_contaminated = self.model.params.base_contaminated[group]
         elif type(self.model.params.base_contaminated) == float:
             base_contaminated = self.model.params.base_contaminated
+        elif type(self.model.params.base_contaminated) == int:
+            if self.model.params.base_contaminated not in [0, 1]:
+                raise ValueError("base_contaminated can only be 0 or 1 if int")
         else:
             raise TypeError("base_contaminated parameter is wrong type")
 

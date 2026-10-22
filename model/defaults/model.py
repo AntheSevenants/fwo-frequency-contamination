@@ -70,7 +70,7 @@ class Parameters:
         # Split into separate ambiguity probabilities
         if type(self.ambiguity_prob) == float:
             self.ambiguity_probs = [self.ambiguity_prob, self.ambiguity_prob]
-        elif type(self.ambiguity_prob) == List[float]:
+        elif type(self.ambiguity_prob) == list:
             if len(self.ambiguity_prob) != 2:
                 raise ValueError("ambiguity_prob should be length 2 if a list")
 
