@@ -57,22 +57,23 @@ class Tally:
         if "__contamination__" in self.__dict__:
             del self.__dict__["__contamination__"]
 
-    def get_production_counts(
+    def get_construction_counts(
         self, construction: int
     ) -> Tuple[Tuple[int, int], np.ndarray]:
-        contamination_idx = model.enums.State.get_state(
-            construction, model.enums.Contamination.CONTAMINATED
-        )
         regular_idx = model.enums.State.get_state(
             construction, model.enums.Contamination.NONE
         )
+        contamination_idx = model.enums.State.get_state(
+            construction, model.enums.Contamination.CONTAMINATED
+        )
 
-        indices = np.array([contamination_idx, regular_idx], dtype=int)
+        indices = np.array([regular_idx, contamination_idx], dtype=int)
         return (
-            model.enums.Contamination.CONTAMINATED,
             model.enums.Contamination.NONE,
+            model.enums.Contamination.CONTAMINATED,
         ), self.frequency[indices]
 
+    # Unused
     def get_reception_counts(
         self, construction: int, contamination: int
     ) -> Tuple[Tuple[Tuple[int, int], Tuple[int, int]], np.ndarray]:
@@ -86,6 +87,29 @@ class Tally:
 
         indices = np.array([real_idx, confusion_idx], dtype=int)
         return (real_profile, confusion_profile), self.frequency[indices]
+
+    def get_a_b_split_introspection(self) -> np.ndarray:
+        sums = self.frequency.reshape(2, 2).sum(axis=1)
+        ratios = sums / sums.sum()
+
+        return ratios
+
+    def get_contamination_prob_for_construction_introspection(
+        self, construction: int, contamination: int
+    ) -> float:
+        # Profile 0 = without contamination
+        # Profile 1 = with contamination
+        profiles, counts = self.get_construction_counts(construction)
+
+        # (to be sure that I get the right profile, I actually should get the index of
+        #  the value of the contamination profile (0/1), and use that to index the count)
+        # (... but that would waste cycles, so I'm just hardcoding this because I know
+        #  the order will be correct)
+
+        return float(counts[contamination] / counts.sum())
+
+    def get_construction_prob_introspection(self, construction) -> float:
+        return float(self.get_a_b_split_introspection()[construction])
 
     @cached_property
     def __frequency__(self) -> np.ndarray:

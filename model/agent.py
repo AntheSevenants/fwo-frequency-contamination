@@ -87,7 +87,7 @@ class ContaminationAgent(mesa.Agent):
 
         # Now, let's check whether the agent will produce a contaminated form
         # profiles = (contamination, contamination)
-        profiles, counts = self.atts.tally.get_production_counts(construction)
+        profiles, counts = self.atts.tally.get_construction_counts(construction)
         threshold = counts[0] / counts.sum()
         contamination = (
             profiles[0]
@@ -114,17 +114,37 @@ class ContaminationAgent(mesa.Agent):
         # in some contexts the ambiguity can be overcome
         # but if there is ambiguity, we need to know
         if is_ambiguous:
-            # profiles = ((construction, contamination), (construction, contamination))
-            # counts = counts for those profiles
-            profiles, counts = self.atts.tally.get_reception_counts(
-                construction, contamination
+            # P(A | contamination) ∝ P(contamination | A) * P(A)
+            # P(B | contamination) ∝ P(contamination | B) * P(B)
+
+            # The construction, whether or not there is contamination
+            real_profile = (construction, contamination)
+            # The other construction, inverse contamination
+            other_construction = np.abs(construction - 1)
+            confusion_profile = (
+                other_construction,
+                np.abs(contamination - 1),
             )
-            threshold = self.model.params.parsing_mode.get_threshold(counts)
-            heard_profile = (
-                profiles[0]
-                if self.model.params.nprandom.random() < threshold
-                else profiles[1]
+
+            real_prob = (
+                self.atts.tally.get_contamination_prob_for_construction_introspection(
+                    *real_profile
+                )
+                * self.atts.tally.get_construction_prob_introspection(construction)
             )
+            confusion_prob = (
+                self.atts.tally.get_contamination_prob_for_construction_introspection(
+                    *confusion_profile
+                )
+                * self.atts.tally.get_construction_prob_introspection(
+                    other_construction
+                )
+            )
+
+            if real_prob >= confusion_prob:
+                heard_profile = real_profile
+            else:
+                heard_profile = confusion_profile
         else:
             heard_profile = (construction, contamination)
 
