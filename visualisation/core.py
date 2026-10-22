@@ -426,7 +426,7 @@ def plot_value(
             line_colour = (
                 COLOURS[0]
                 if multi_group_context == MultiGroupContext.CONSERVATOR_INNOVATOR
-                else COLOURS[attribute_idx]
+                else get_colour(attribute_idx)
             )
         else:
             line_colour = legend_colours[attribute_idx]
@@ -611,7 +611,11 @@ def plot_ratio(
             # Across parameter combinations, we only show the innovative construction
             # so here line colour can encode a specific parameter value
             if legend_colours is None:
-                line_colour = get_colour(i)
+                line_colour = (
+                    COLOURS[0]
+                    if multi_group_context == MultiGroupContext.CONSERVATOR_INNOVATOR
+                    else get_colour(attribute_idx)
+                )
             else:
                 line_colour = legend_colours[attribute_idx]
 
@@ -623,7 +627,9 @@ def plot_ratio(
                 line_style = legend_styles[attribute_idx]
 
             if legend_colour_labels is None:
-                legend_label = f"#{attribute_idx}"
+                legend_label = make_legend_label_by_group_context(
+                    attribute_idx, aggregate_extension_x=aggregate_extension_x
+                )
             else:
                 if legend_style_labels is None:
                     legend_label = legend_colour_labels[attribute_idx]
