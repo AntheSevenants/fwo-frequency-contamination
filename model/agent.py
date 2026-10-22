@@ -1,11 +1,12 @@
 from __future__ import annotations
 
 import mesa
-import model.enums
-import model.defaults.agent
 import numpy as np
 import copy
 
+import model.enums
+import model.entropy
+import model.defaults.agent
 
 from scipy.special import logsumexp
 from typing import Dict, List, Self, TYPE_CHECKING, Tuple
@@ -14,6 +15,12 @@ from typing import Dict, List, Self, TYPE_CHECKING, Tuple
 
 if TYPE_CHECKING:
     from model.model import ContaminationModel
+
+
+def scores_to_entropy(scores: np.ndarray):
+    decision_entropy = model.entropy.compute_entropy(scores / np.sum(scores))
+
+    return decision_entropy
 
 
 class ContaminationAgent(mesa.Agent):
@@ -148,11 +155,15 @@ class ContaminationAgent(mesa.Agent):
                 heard_profile = real_profile
             else:
                 heard_profile = confusion_profile
+
+            probs = [real_prob, confusion_prob]
         else:
             heard_profile = (construction, contamination)
+            probs = [1, 0]
 
         self.atts.tally.update(*heard_profile)
         self.track_communication((construction, contamination), heard_profile)
+        self.model.tracker.register_decision_entropy(scores_to_entropy(np.array(probs)))
 
     def track_communication(
         self, intended_profile: Tuple[int, int], heard_profile: Tuple[int, int]

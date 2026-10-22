@@ -54,6 +54,9 @@ class Tracker:
         self.communicative_success.reset()
         self.decision_entropy = []
 
+    def register_decision_entropy(self, decision_entropy: float):
+        self.decision_entropy.append(decision_entropy)
+
     @property
     def __confusion_matrix_a__(self):
         return self.communicative_success.get_confusion_matrix_by_group(

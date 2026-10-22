@@ -19,6 +19,7 @@ import export.combinations
 import batch.aggregate
 import visualisation.contamination
 import visualisation.communication
+import visualisation.entropy
 import visualisation.multiplot
 
 
@@ -231,9 +232,17 @@ graph_configs: Dict[str, GraphConfig | MosaicConfig] = {
         aggregate_extension=True,
         interactive_args=["step"],
     ),
+    "entropy": GraphConfig(
+        reporter_name="decision_entropy",
+        plot_func=visualisation.entropy.plot_ctx_entropy_mean,
+        # agent_types=[model.enums.Group.GROUP_A, model.enums.Group.GROUP_B],
+        common_args=["x_scale_factor", "min_data", "max_data"],
+        aggregate_extension=True,
+        interactive_args=["step"],
+    ),
     "contamination_mosaic": MosaicConfig(
         layout=[
-            ["contamination", "contamination"],
+            ["contamination", "entropy"],
         ],
         aggregate_extension=True,
         size=(12, 6),

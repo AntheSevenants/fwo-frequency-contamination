@@ -69,6 +69,7 @@ class ContaminationModel(mesa.Model):
         if self.time % self.params.datacollector_step_size == 0:
             # Collect information about this specific model step
             self.datacollector.collect(self)
+            self.tracker.reset()
 
         # Check if agents need to be replaced
         dead_agents = []
