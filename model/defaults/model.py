@@ -1,8 +1,6 @@
 from itertools import product
 
 import model.constructions.sample
-import model.constructions.vocab
-import model.constructions.parsing
 import numpy as np
 
 from dataclasses import dataclass, asdict, field
@@ -51,14 +49,6 @@ class Parameters:
     # ----
     agent_age_mean: int = 0
     agent_age_range: int = 200
-
-    # ----
-    # Cognition parameters
-    # ----
-    parsing_mode: (
-        model.constructions.parsing.ExactParsing
-        | model.constructions.parsing.LazyParsing
-    ) = field(default_factory=lambda: model.constructions.parsing.ExactParsing())
 
     def __post_init__(self):
         # Initialise random number generator
