@@ -18,16 +18,26 @@ class Tally:
     def __init__(
         self, base_contaminated: float, baseline_frequency: int, a_b_split: float
     ):
+        """Initialise the frequency tally for this agent based on the A/B/ split, base contamination and baseline frequency
+
+        Args:
+            base_contaminated (float): Ratio of Construction A is contaminated from the start?
+            baseline_frequency (int): Total frequency count of entire tally
+            a_b_split (float): Ratio of occurrence of Construction A. B = (1 - A)
+        """
+
         # Build frequency tallies
         self.frequency: np.ndarray = np.zeros(model.enums.State._COUNT)
 
+        # If A/B = 0.4 and baseline frequency = 100, A = 40 and B = 60
         baseline_frequency_a = round(a_b_split * baseline_frequency)
         baseline_frequency_b = baseline_frequency - baseline_frequency_a
 
+        # If base contaminated = 0.2 and A = 40, then freq contaminated = 8
         frequency_contaminated_a = round(baseline_frequency_a * base_contaminated)
         frequency_none_a = baseline_frequency_a - frequency_contaminated_a
 
-        # Set starting frequency
+        # Encode these frequencies
         self.frequency[
             model.enums.State.get_state(
                 model.enums.Construction.A, model.enums.Contamination.NONE
@@ -45,9 +55,18 @@ class Tally:
         ] = baseline_frequency_b
 
     def update(self, construction: int, contamination: int):
+        """Update the frequency count of a construction with/without contamination.
+
+        Args:
+            construction (int): Either of the two constructions: model.enums.Construction.A | model.enums.Construction.B
+            contamination (int): Either of the two contamination states: model.enums.contamination.CONTAMINATED | model.enums.contamination.NONE
+        """
+
+        # First, derive the correct column index from the identity
         column_idx = model.enums.State.get_state(construction, contamination)
 
         # TODO: perhaps implement lateral inhibition
+        # Increase frequency count for this identity
         self.frequency[column_idx] += 1
 
         # Invalidate cache
@@ -60,6 +79,15 @@ class Tally:
     def get_construction_counts(
         self, construction: int
     ) -> Tuple[Tuple[int, int], np.ndarray]:
+        """Get the uncontaminated/contaminated counts for a specific construction
+
+        Args:
+            construction (int): Either of the two constructions: model.enums.Construction.A | model.enums.Construction.B
+
+        Returns:
+            Tuple[Tuple[int, int], np.ndarray]: ((Contamination.NONE, Contamination.CONTAMINATED), [#none, #contaminated])
+        """
+
         regular_idx = model.enums.State.get_state(
             construction, model.enums.Contamination.NONE
         )
@@ -73,22 +101,13 @@ class Tally:
             model.enums.Contamination.CONTAMINATED,
         ), self.frequency[indices]
 
-    # Unused
-    def get_reception_counts(
-        self, construction: int, contamination: int
-    ) -> Tuple[Tuple[Tuple[int, int], Tuple[int, int]], np.ndarray]:
-        real_profile = (construction, contamination)
-        confusion_profile = (
-            np.abs(construction - 1),
-            np.abs(contamination - 1),
-        )
-        real_idx = model.enums.State.get_state(*real_profile)
-        confusion_idx = model.enums.State.get_state(*confusion_profile)
-
-        indices = np.array([real_idx, confusion_idx], dtype=int)
-        return (real_profile, confusion_profile), self.frequency[indices]
-
     def get_a_b_split_introspection(self) -> np.ndarray:
+        """Get the total counts for construction A and B;
+
+        Returns:
+            np.ndarray: np array with counts for construction A and B respectively
+        """
+
         sums = self.frequency.reshape(2, 2).sum(axis=1)
         ratios = sums / sums.sum()
 
@@ -97,6 +116,17 @@ class Tally:
     def get_contamination_prob_for_construction_introspection(
         self, construction: int, contamination: int
     ) -> float:
+        """Get the probability of a contamination state given a construction
+
+        Args:
+            construction (int): Either of the two constructions: model.enums.Construction.A | model.enums.Construction.B
+            contamination (int): Either of the two contamination states: model.enums.contamination.CONTAMINATED | model.enums.contamination.NONE
+
+        Returns:
+            float: The probability of the given contamination state, given the supplied construction
+        """
+
+        # First, get the uncontaminated/contaminated count split
         # Profile 0 = without contamination
         # Profile 1 = with contamination
         profiles, counts = self.get_construction_counts(construction)
@@ -106,17 +136,39 @@ class Tally:
         # (... but that would waste cycles, so I'm just hardcoding this because I know
         #  the order will be correct)
 
+        # Then, get the ratio of the required contamination state given the full count
         return float(counts[contamination] / counts.sum())
 
-    def get_construction_prob_introspection(self, construction) -> float:
+    def get_construction_prob_introspection(self, construction: int) -> float:
+        """Get the probability of a given construction
+
+        Args:
+            construction (int): Either of the two constructions: model.enums.Construction.A | model.enums.Construction.B
+
+        Returns:
+            float: The probability of the given construction
+        """
+
         return float(self.get_a_b_split_introspection()[construction])
 
     @cached_property
     def __frequency__(self) -> np.ndarray:
+        """The frequency matrix kept internally
+
+        Returns:
+            np.ndarray: The frequency matrix
+        """
+
         return self.frequency
 
     @cached_property
     def __contamination__(self) -> np.ndarray:
+        """Contamination shares for both constructions
+
+        Returns:
+            np.ndarray: Degree of contamination for each construction, as a numpy array
+        """
+
         a1, a2 = self.__frequency__[0], self.__frequency__[1]
         b1, b2 = self.__frequency__[2], self.__frequency__[3]
 

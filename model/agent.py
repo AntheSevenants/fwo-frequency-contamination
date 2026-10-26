@@ -58,7 +58,7 @@ class ContaminationAgent(mesa.Agent):
             base_contaminated = self.model.params.base_contaminated
         elif type(self.model.params.base_contaminated) == int:
             if self.model.params.base_contaminated not in [0, 1]:
-                raise ValueError("base_contaminated can only be 0 or 1 if int")
+                raise ValueError("base_contaminated can only be 0 or 1 when int")
         else:
             raise TypeError("base_contaminated parameter is wrong type")
 
@@ -120,6 +120,14 @@ class ContaminationAgent(mesa.Agent):
     def receive_construction(
         self, construction: int, contamination: int, is_ambiguous: bool
     ):
+        """Runs whenever the agent acts as a hearer. They hear a construction that is possibly contaminated. Depending on the context, the utterance may be ambiguous.
+
+        Args:
+            construction (int): Either of the two constructions: model.enums.Construction.A | model.enums.Construction.B
+            contamination (int): Either of the two contamination states: model.enums.contamination.CONTAMINATED | model.enums.contamination.NONE
+            is_ambiguous (bool): Whether the identity of the construction can unambiguously be decided
+        """
+
         # if there is contamination, it does not mean there is ambiguity,
         # in some contexts the ambiguity can be overcome
         # but if there is ambiguity, we need to know
@@ -168,6 +176,13 @@ class ContaminationAgent(mesa.Agent):
     def track_communication(
         self, intended_profile: Tuple[int, int], heard_profile: Tuple[int, int]
     ):
+        """Keeps track of intended and heard constructions.
+
+        Args:
+            intended_profile (Tuple[int, int]): Construction + Contamination identities
+            heard_profile (Tuple[int, int]): Construction + Contamination identities
+        """
+
         intended_state = model.enums.State.get_state(*intended_profile)
         heard_state = model.enums.State.get_state(*heard_profile)
 
@@ -176,7 +191,13 @@ class ContaminationAgent(mesa.Agent):
         )
 
     @property
-    def is_dead(self):
+    def is_dead(self) -> bool:
+        """Is the agent still with us?
+
+        Returns:
+            bool: Whether the agent has died
+        """
+
         # Eternal life
         if self.atts.max_age is None:
             return False
