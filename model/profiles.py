@@ -1,5 +1,4 @@
 import model.enums
-import model.constructions.parsing
 
 from batch.profile import BatchProfile
 
