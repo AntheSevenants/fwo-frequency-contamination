@@ -360,6 +360,7 @@ def plot_value(
     attributes: str | List[str],
     ylim: Optional[List[float]] = None,
     x_scale_factor: int = 1,
+    y_baseline: float | None = None,
     ax: Optional[matplotlib.axes.Axes] = None,
     agent_filter: Optional[int] = None,
     min_data: List[float] | List[List[float]] | None = None,
@@ -384,6 +385,7 @@ def plot_value(
         attributes (Union[str, List[str]]): The names of the series to model. Always supply, even if input data is not a model, so dimensionality of the data can be assessed.
         ylim (Optional[List[float]], optional): The expected range of values for y axis. Defaults to None.
         x_scale_factor (int, optional): The factor to scale the x axis ticks by. Defaults to 1.
+        y_baseline (float | None): Some baseline to show on the y axis. Defaults to None.
         ax (Optional[matplotlib.axes.Axes], optional): A pre-existing axis. Pass if you are building a multi-plot. Defaults to None.
         agent_filter (Optional[int], optional): The index of the agent you want to filter values for. If not supplied, no filtering is applied. Defaults to None.
         min_data (List[float] | List[List[float]] | None, optional): List of minimal values. Needs to be defined together with max_data. Defaults to None.
@@ -449,6 +451,14 @@ def plot_value(
                 legend_label = None
 
         ax.plot(value_list, color=line_colour, linestyle=line_style, label=legend_label)
+
+        if y_baseline is not None:
+            ax.axhline(
+                y_baseline,
+                color="gray",
+                alpha=0.1,
+                linestyle="dashed",
+            )
 
         # Plot the shaded area between min and max values
         if _min_data is not None and _max_data is not None:
@@ -527,6 +537,7 @@ def plot_ratio(
     filter_dimension: int | None = None,
     ylim: List[float] = [0, 1],
     x_scale_factor: int = 1,
+    y_baseline: float | None = None,
     ax: Optional[matplotlib.axes.Axes] = None,
     agent_filter: Optional[int] = None,
     min_data: List[float] | List[List[float]] | None = None,
@@ -551,6 +562,8 @@ def plot_ratio(
         attributes (Union[str, List[str]]): The names of the series to model. Always supply, even if input data is not a model, so dimensionality of the data can be assessed.
         filter_dimension (int | None): Only plot one specific dimension of the array. Defaults to None.
         ylim (List[float], optional): The expected range of values, will be the y axis. Defaults to [0, 1].
+        y_baseline (float | None): Some baseline to show on the y axis. Defaults to None.
+        ax (Optional[matplotlib.axes.Axes], optional): A pre-existing axis. Pass if you are building a multi-plot. Defaults to None.
         x_scale_factor (int, optional): The factor to scale the x axis ticks by. Defaults to 1.
         ax (Optional[matplotlib.axes.Axes], optional): A pre-existing axis. Pass if you are building a multi-plot. Defaults to None.
         agent_filter (Optional[int], optional): The index of the agent you want to filter values for. If not supplied, no filtering is applied. Defaults to None.
@@ -642,6 +655,14 @@ def plot_ratio(
                 linestyle=line_style,
                 label=legend_label,
             )
+
+            if y_baseline is not None:
+                ax.axhline(
+                    y_baseline,
+                    color="gray",
+                    alpha=0.1,
+                    linestyle="dashed",
+                )
 
             # Plot the shaded area between min and max values
             if _min_data is not None and _max_data is not None:

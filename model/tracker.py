@@ -75,6 +75,34 @@ class Tracker:
             [self.model.params.a_group_share, 1 - self.model.params.a_group_share]
         )
 
+    @property
+    def __ambiguity_avoidance_rate__(self):
+        intended_state = model.enums.State.get_state(
+            model.enums.Construction.A, model.enums.Contamination.CONTAMINATED
+        )
+        confusion_state = model.enums.State.get_state(
+            model.enums.Construction.B, model.enums.Contamination.NONE
+        )
+
+        a_cont_count = self.__confusion_matrix__[intended_state, intended_state]
+        b_none_count = self.__confusion_matrix__[intended_state, confusion_state]
+
+        return float(np.divide(b_none_count, a_cont_count + b_none_count))
+
+    @property
+    def __constructional_contamination_rate__(self):
+        intended_state = model.enums.State.get_state(
+            model.enums.Construction.B, model.enums.Contamination.NONE
+        )
+        confusion_state = model.enums.State.get_state(
+            model.enums.Construction.A, model.enums.Contamination.CONTAMINATED
+        )
+
+        b_none_count = self.__confusion_matrix__[intended_state, intended_state]
+        a_cont_count = self.__confusion_matrix__[intended_state, confusion_state]
+
+        return float(np.divide(a_cont_count, b_none_count + a_cont_count))
+
     def get_global(self, property_name):
         return getattr(self, property_name)
 
