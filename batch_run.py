@@ -6,6 +6,7 @@ import pandas as pd
 import argparse
 import dataclasses
 import json
+import os
 
 import model.profiles
 import batch.sweep_info
@@ -14,6 +15,11 @@ import export.sweeps
 import batch_run_post
 
 from model.model import ContaminationModel
+
+# Prevent server explosion
+os.environ["OPENBLAS_NUM_THREADS"] = "1"
+os.environ["MKL_NUM_THREADS"] = "1"
+os.environ["OMP_NUM_THREADS"] = "1"
 
 parser = argparse.ArgumentParser(description="batch_run - volt go brr again, and again")
 parser.add_argument("profile", type=str, help="regular")
