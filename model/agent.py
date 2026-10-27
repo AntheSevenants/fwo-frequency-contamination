@@ -18,7 +18,7 @@ if TYPE_CHECKING:
 
 
 def scores_to_entropy(scores: np.ndarray):
-    decision_entropy = model.entropy.compute_entropy(scores / np.sum(scores))
+    decision_entropy = model.entropy.fast_entropy(scores)
 
     return decision_entropy
 
