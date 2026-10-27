@@ -96,13 +96,15 @@ class ContaminationAgent(mesa.Agent):
         construction = self.atts.get_construction()
 
         # Now, let's check whether the agent will produce a contaminated form
-        # profiles = (contamination, contamination)
-        profiles, counts = self.atts.tally.get_construction_counts(construction)
-        threshold = counts[0] / counts.sum()
+        threshold = (
+            self.atts.beliefs.get_contamination_prob_for_construction_introspection(
+                construction, model.enums.Contamination.CONTAMINATED
+            )
+        )
         contamination = (
-            profiles[0]
+            model.enums.Contamination.CONTAMINATED
             if self.model.params.nprandom.random() < threshold
-            else profiles[1]
+            else model.enums.Contamination.NONE
         )
 
         # "iets verkeerdS"
@@ -145,16 +147,16 @@ class ContaminationAgent(mesa.Agent):
             )
 
             real_prob = (
-                self.atts.tally.get_contamination_prob_for_construction_introspection(
+                self.atts.beliefs.get_contamination_prob_for_construction_introspection(
                     *real_profile
                 )
-                * self.atts.tally.get_construction_prob_introspection(construction)
+                * self.atts.beliefs.get_construction_prob_introspection(construction)
             )
             confusion_prob = (
-                self.atts.tally.get_contamination_prob_for_construction_introspection(
+                self.atts.beliefs.get_contamination_prob_for_construction_introspection(
                     *confusion_profile
                 )
-                * self.atts.tally.get_construction_prob_introspection(
+                * self.atts.beliefs.get_construction_prob_introspection(
                     other_construction
                 )
             )
@@ -169,7 +171,7 @@ class ContaminationAgent(mesa.Agent):
             heard_profile = (construction, contamination)
             probs = [1, 0]
 
-        self.atts.tally.update(*heard_profile)
+        self.atts.beliefs.update(*heard_profile)
         self.track_communication((construction, contamination), heard_profile)
         self.model.tracker.register_decision_entropy(scores_to_entropy(np.array(probs)))
 

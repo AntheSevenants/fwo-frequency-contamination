@@ -5,7 +5,7 @@ from dataclasses import dataclass, asdict, field
 from typing import List, Optional
 
 import model.defaults.model
-import model.constructions.tally
+import model.constructions.beliefs
 import model.enums
 
 
@@ -26,10 +26,11 @@ class Attributes:
             raise ValueError("Model parameters cannot be None")
 
         # Make a deepcopy of the vocabulary
-        self.tally = model.constructions.tally.Tally(
-            self.base_contaminated,
-            self.model_params.initial_vocab_size,
+        self.beliefs = model.constructions.beliefs.Beliefs(
             self.model_params.a_b_split,
+            self.base_contaminated,
+            0.0,
+            self.model_params.learning_rate,
         )
 
         # Prepare for construction choice

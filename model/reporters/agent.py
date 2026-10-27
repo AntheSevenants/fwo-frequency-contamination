@@ -41,8 +41,7 @@ class ModelReporter:
 
 # Basic properties for which to construct model reporters
 model_reporters_base = {
-    "frequency": ModelReporter(property_name="tally.__frequency__"),
-    "contamination": ModelReporter(property_name="tally.__contamination__"),
+    "contamination": ModelReporter(property_name="beliefs.__contamination__"),
 }
 
 # Create a specialised tracking function depending on:

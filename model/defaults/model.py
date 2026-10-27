@@ -24,19 +24,14 @@ class Parameters:
     datacollector_step_size: int = 1
 
     # ----
-    # Vocab
-    # ----
-    initial_vocab_size = 100
-
-    # ----
     # Construction info
     # ----
     a_b_split: float = 0.4
 
-    ambiguity_prob: float | List[float] = 0.5
-
-    # How much do agents already have experience with contaminated forms?
-    base_contaminated: float | List[float] = 0.0
+    ambiguity_prob: float | List[float] = 0.5  # dim 0 = CA, dim 1 = CB
+    # initial contamination
+    base_contaminated: float | List[float] = 0.0  # dim 0 = group A, dim 1 = group B
+    learning_rate: float = 0.01  # how fast do beliefs change?
 
     # ----
     # Group information
