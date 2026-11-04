@@ -45,7 +45,14 @@ def do_post_run_aggregation(current_sweep: str):
         # Now aggregate, then turn into a list
         for column_name in aggregated_data:
             data_matrix = np.array(aggregated_data[column_name])
-            if column_name.endswith("_mean") or column_name.endswith("_median") or True:
+
+            if column_name == "consensus_reached":
+                aggregated_data_out[column_name] = {
+                    "raw": batch.combination.compute_bool_perc(data_matrix)
+                }
+            elif (
+                column_name.endswith("_mean") or column_name.endswith("_median") or True
+            ):
                 aggregated_data_out[column_name] = (
                     batch.combination.get_combination_metrics(
                         data_matrix,
@@ -60,10 +67,6 @@ def do_post_run_aggregation(current_sweep: str):
                         ],
                     )
                 )
-            if column_name == "consensus_reached":
-                aggregated_data_out[column_name] = {
-                    "raw": batch.combination.compute_bool_perc(data_matrix)
-                }
 
         aggregated_data["combination_id"] = row["combination_id"]
 
