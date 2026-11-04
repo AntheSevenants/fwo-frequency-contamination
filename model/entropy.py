@@ -15,7 +15,7 @@ def fast_entropy(scores: np.ndarray) -> float:
         float: The computed entropy level.
     """
 
-    p = scores / np.sum(scores)
+    p = scores
     p = p[p > 0]
 
     return -np.sum(p * np.log2(p))

@@ -161,19 +161,33 @@ class ContaminationAgent(mesa.Agent):
                 )
             )
 
-            if real_prob >= confusion_prob:
-                heard_profile = real_profile
-            else:
-                heard_profile = confusion_profile
+            probs = np.array([real_prob, confusion_prob])
+            probs = probs / np.sum(probs)
 
-            probs = [real_prob, confusion_prob]
+            if (
+                self.model.params.decision_strategy
+                == model.enums.DecisionStrategy.ARG_MAX
+            ):
+                if real_prob >= confusion_prob:
+                    heard_profile = real_profile
+                else:
+                    heard_profile = confusion_profile
+            elif (
+                self.model.params.decision_strategy
+                == model.enums.DecisionStrategy.SAMPLE
+            ):
+                heard_profile = (
+                    real_profile
+                    if self.model.params.nprandom.random() < probs[0]
+                    else confusion_profile
+                )
         else:
             heard_profile = (construction, contamination)
-            probs = [1, 0]
+            probs = np.array([1, 0])
 
         self.atts.beliefs.update(*heard_profile)
         self.track_communication((construction, contamination), heard_profile)
-        self.model.tracker.register_decision_entropy(scores_to_entropy(np.array(probs)))
+        self.model.tracker.register_decision_entropy(scores_to_entropy(probs))
 
     def track_communication(
         self, intended_profile: Tuple[int, int], heard_profile: Tuple[int, int]

@@ -1,6 +1,6 @@
 from itertools import product
 
-import model.constructions.sample
+import model.enums
 import numpy as np
 
 from dataclasses import dataclass, asdict, field
@@ -32,6 +32,11 @@ class Parameters:
     # initial contamination
     base_contaminated: float | List[float] = 0.0  # dim 0 = group A, dim 1 = group B
     learning_rate: float = 0.01  # how fast do beliefs change?
+
+    # ----
+    # Cognition parameters
+    # ----
+    decision_strategy: int = model.enums.DecisionStrategy.ARG_MAX
 
     # ----
     # Group information

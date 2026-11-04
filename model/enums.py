@@ -50,3 +50,8 @@ class State:
 class Group:
     GROUP_A = 0
     GROUP_B = 1
+
+
+class DecisionStrategy:
+    ARG_MAX = 0
+    SAMPLE = 1
