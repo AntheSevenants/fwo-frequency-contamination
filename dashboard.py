@@ -32,6 +32,11 @@ def url_add_param(endpoint, args, key, value):
 app.jinja_env.filters["url_add_param"] = url_add_param
 
 
+@app.route("/report/")
+def report():
+    return show_interface(live=False, report=True)
+
+
 @app.route("/live/")
 def live():
     return show_interface(live=True)
@@ -43,7 +48,7 @@ def index():
 
 
 # Live = are we looking at graphs from the jupyter notebook?
-def show_interface(live: bool = False):
+def show_interface(live: bool = False, report: bool = False):
     # "sweep" = a complete batch run with multiple parameter combinations
     sweeps = export.sweeps.get_sweeps(args.sweeps_dir)
     # "selected sweep" = one of those batch runs
@@ -54,6 +59,10 @@ def show_interface(live: bool = False):
     selected_filter = request.args.get("filter")
     # You can filter for a specific run
     selected_run = request.args.get("run")
+    # Direct combination ID parameter
+    combination_id = request.args.get("combination_id")
+
+    print("a", combination_id)
 
     # Aggregate parameter allows you to aggregate over multiple parameter combinations
     aggregate = request.args.get("aggregate")
@@ -113,7 +122,7 @@ def show_interface(live: bool = False):
         selected_run = None
 
     # Run selection logic
-    if selected_sweep is not None:
+    if selected_sweep is not None and report is False:
         # Get information about all runs in the sweep as a dataframe
         run_infos = export.sweeps.get_run_infos(
             args.sweeps_dir, selected_sweep, hashable_safe=True
@@ -130,7 +139,7 @@ def show_interface(live: bool = False):
             range(0, int(sweep_info["num_steps"]) + tick_step, tick_step),
         )
 
-        if parameter_sets is not None:
+        if parameter_sets is not None and combination_id is None:
             if selected_parameter_set is None:
                 # Redirect to first available parameter set
                 return redirect(
@@ -161,6 +170,8 @@ def show_interface(live: bool = False):
                         aggregate, selected_parameters
                     )
                 )
+
+                print("woe")
                 return redirect(
                     url_for("index", _external=False, **selected_parameters)
                 )
@@ -168,11 +179,12 @@ def show_interface(live: bool = False):
         # If no parameter combination was made, create a parameter selection ourselves
         # Now that we have parameter sets, it is possible that the only parameter left is in an aggregation
         # So no selection is OK if aggregate is defined
-        if no_selection and aggregate is None:
+        if no_selection and aggregate is None and combination_id is None:
             for parameter in parameter_mapping:
                 selected_parameters[parameter] = parameter_mapping[parameter][0]
 
             if len(parameter_mapping) > 0:
+                print("welle weg")
                 return redirect(
                     url_for("index", _external=False, **selected_parameters)
                 )
@@ -180,6 +192,8 @@ def show_interface(live: bool = False):
                 no_selection = False
         elif no_selection and aggregate is not None:
             no_selection = False
+
+        print("b", combination_id)
 
         # These are runs that adhere to the parameter selection made
         selected_runs = export.parameters.find_eligible_runs(
@@ -202,6 +216,23 @@ def show_interface(live: bool = False):
             combination_ids = unique_combination_ids[0]
             # Get the IDs of all runs which belong to the search results
             matched_run_ids = selected_runs["run_id"].unique().tolist()
+
+            # If we came here from a defined combination_id, set the associated parameters and redirect
+            if combination_id is not None:
+                row = selected_runs.iloc[0]
+                for parameter in parameter_mapping:
+                    if parameter in export.parameters.RESERVED_KEYWORDS:
+                        continue
+
+                    selected_parameters[parameter] = str(row[parameter])
+                selected_parameters["parameter_set"] = str(row["parameter_set"])
+
+                # Delete combination ID, else we get an infinite loop
+                del selected_parameters["combination_id"]
+
+                return redirect(
+                    url_for("index", _external=False, **selected_parameters)
+                )
 
             if selected_run is not None and selected_run != "none":
                 if int(selected_run) not in matched_run_ids:
@@ -275,6 +306,7 @@ def show_interface(live: bool = False):
         parameter_mapping=parameter_mapping,
         constants_mapping=constants_mapping,
         live=live,  # opus
+        report=report,
         no_selection=no_selection,
         graphs=graphs,
         all_graphs=GRAPHS,
@@ -323,6 +355,11 @@ def send_combination_graph(
     return send_graph(
         graph_name, selected_sweep, combination_id, selected_step=selected_step
     )
+
+
+@app.route("/report/<string:selected_sweep>/")
+def send_report(selected_sweep: str):
+    return send_file(export.sweeps.make_report_path(args.sweeps_dir, selected_sweep))
 
 
 def send_graph(

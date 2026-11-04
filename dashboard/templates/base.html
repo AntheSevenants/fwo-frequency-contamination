@@ -66,12 +66,23 @@
                             </select>
                             <label for="select_external">Available sweeps:</label>
                         </div>
+                        {% if selected_sweep is not none %}
+                        {% if report is true %}
+                        <a type="button" class="btn btn-outline-light w-100"
+                            href="{{ url_for('index', sweep=selected_sweep) }}">
+                            <i class="bi bi-sliders"></i> Switch to parameter view
+                        </a>
+                        {% else %}
+                        <a type="button" class="btn btn-outline-light w-100"
+                            href="{{ url_for('report', sweep=selected_sweep) }}">
+                            <i class="bi bi-table"></i> Switch to overview
+                        </a>
+                        {% endif %}
+                        {% endif %}
                     </div>
                 </div>
                 {% endif %}
-                {% if selected_sweep is not none and parameter_sets is not none and
-                not
-                live %}
+                {% if selected_sweep is not none and parameter_sets is not none and not live and not report %}
                 <div class="card mb-3">
                     <div class="card-header text-white">
                         <div class="wrapper"><i class="bi bi-collection"></i></div> Parameter set filter
@@ -94,8 +105,7 @@
                 </div>
                 {% endif %}
                 {% if selected_sweep is not none and (selected_parameter_set is not none or parameter_sets is none) and
-                not
-                live %}
+                not live and not report %}
                 <div class="card mb-3">
                     <div class="card-header text-white">
                         <div class="wrapper"><i class="bi bi-person-walking"></i></div> Run filter
@@ -131,7 +141,7 @@
                         </div>
                     </div>
                 </div>
-                {% if not live %}
+                {% if not live and not report %}
                 {% if aggregate_parameter is not none %}
                 <div class="card mb-3">
                     <div class="card-header text-white">

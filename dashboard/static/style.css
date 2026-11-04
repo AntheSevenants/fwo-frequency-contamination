@@ -5,8 +5,13 @@ main {
     overflow-y: hidden;
 }
 
+.sidebar,
+.tabulator .tabulator-header .tabulator-col {
+    background-color: #490043 !important;
+    color: #ffffff;
+}
+
 .sidebar {
-    background-color: #490043;
     overflow-y: scroll;
     width: 325px;
 }
