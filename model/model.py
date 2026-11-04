@@ -54,6 +54,22 @@ class ContaminationModel(mesa.Model):
         )
         # Initialise the model model reporters
         model_reporters_model = model.reporters.model.get_model_reporters()
+        consensus_lambda: Callable[[ContaminationModel], bool] = lambda model: (
+            False
+            if len(model.datacollector.model_vars["contamination_mean"]) == 0
+            else (
+                (
+                    np.isclose(
+                        model.datacollector.model_vars["contamination_mean"][-1][0], 1
+                    )
+                    or np.isclose(
+                        model.datacollector.model_vars["contamination_mean"][-1][0], 0
+                    )
+                )
+            )
+        )
+        model_reporters_model["consensus_reached"] = consensus_lambda
+
         self.datacollector = mesa.DataCollector(
             model_reporters={**model_reporters_agents, **model_reporters_model}
         )
