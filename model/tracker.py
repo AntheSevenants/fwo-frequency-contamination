@@ -76,7 +76,7 @@ class Tracker:
         )
 
     @property
-    def __ambiguity_avoidance_rate__(self):
+    def __ambiguity_avoidance_rate__(self) -> float:
         intended_state = model.enums.State.get_state(
             model.enums.Construction.A, model.enums.Contamination.CONTAMINATED
         )
@@ -87,10 +87,10 @@ class Tracker:
         a_cont_count = self.__confusion_matrix__[intended_state, intended_state]
         b_none_count = self.__confusion_matrix__[intended_state, confusion_state]
 
-        return float(np.divide(b_none_count, a_cont_count + b_none_count))
+        return self.compute_ratio(b_none_count, a_cont_count + b_none_count)
 
     @property
-    def __constructional_contamination_rate__(self):
+    def __constructional_contamination_rate__(self) -> float:
         intended_state = model.enums.State.get_state(
             model.enums.Construction.B, model.enums.Contamination.NONE
         )
@@ -101,7 +101,13 @@ class Tracker:
         b_none_count = self.__confusion_matrix__[intended_state, intended_state]
         a_cont_count = self.__confusion_matrix__[intended_state, confusion_state]
 
-        return float(np.divide(a_cont_count, b_none_count + a_cont_count))
+        return self.compute_ratio(a_cont_count, b_none_count + a_cont_count)
+
+    def compute_ratio(self, numerator: int | float, denominator: int | float):
+        if denominator == 0 or denominator == 0.0:
+            return 0
+        else:
+            return float(np.divide(numerator, denominator))
 
     def get_global(self, property_name):
         return getattr(self, property_name)
