@@ -37,6 +37,11 @@ def do_report(current_sweep: str):
     for column in new_cols:
         report_df[column] = new_cols[column]
 
+    # Drop superfluous columns
+    report_df = report_df.drop(
+        ["run_id", "iteration", "steps", "seed", "datacollector_step_size"], axis=1
+    )
+
     # Write report to file
     report_path = export.sweeps.make_report_path(SWEEPS_DIR, current_sweep)
     report_df.to_csv(report_path, index=False)
