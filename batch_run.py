@@ -13,6 +13,7 @@ import batch.sweep_info
 import batch.messaging
 import export.sweeps
 import batch_run_post
+import batch_run_report
 
 from model.model import ContaminationModel
 
@@ -104,6 +105,7 @@ if __name__ == "__main__":
         writer.write(json.dumps(sweep_info_dict))
 
     batch_run_post.do_post_run_aggregation(current_sweep)
+    batch_run_report.do_report(current_sweep)
 
     if webhook is not None:
         webhook.handle_event(

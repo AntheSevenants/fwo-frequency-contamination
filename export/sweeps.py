@@ -120,6 +120,42 @@ def make_combination_infos_path(sweeps_dir: str, selected_sweep: str) -> str:
     return os.path.join(selected_sweep_dir, "combination_infos.json")
 
 
+def get_report(sweeps_dir: str, selected_sweep: str) -> pd.DataFrame:
+    """Returns a dataframe containing a report aggregating information from different parameter combinations
+
+    Args:
+        sweeps_dir (str): The path to the directory where all sweeps are stored
+        selected_sweep (str): The name of the sweep of interest
+
+    Raises:
+        FileNotFoundError: Raised if the combination infos file cannot be found in the sweep directory
+
+    Returns:
+        pd.DataFrame: Dataframe containing the report
+    """
+
+    report_path = make_report_path(sweeps_dir, selected_sweep)
+    if not os.path.exists(report_path):
+        raise FileNotFoundError("Report CSV path does not exist")
+
+    return pd.read_json(report_path, orient="records")
+
+
+def make_report_path(sweeps_dir: str, selected_sweep: str) -> str:
+    """Make the path for where report CSV is stored
+
+    Args:
+        sweeps_dir (str): The path to the directory where all sweeps are stored
+        selected_sweep (str): The name of the sweep fo interest
+
+    Returns:
+        str: Path where report CSV is stored
+    """
+
+    selected_sweep_dir = make_selected_sweep_dir(sweeps_dir, selected_sweep)
+    return os.path.join(selected_sweep_dir, "report.csv")
+
+
 def make_selected_sweep_dir(
     sweeps_dir: str, selected_sweep: str, create: bool = False
 ) -> str:
