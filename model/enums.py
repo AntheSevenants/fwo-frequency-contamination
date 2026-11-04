@@ -55,3 +55,8 @@ class Group:
 class DecisionStrategy:
     ARG_MAX = 0
     SAMPLE = 1
+
+
+class ConstructionStorage:
+    FINE_GRAINED = 0
+    COARSE = 1

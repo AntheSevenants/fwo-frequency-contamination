@@ -37,6 +37,7 @@ class Parameters:
     # Cognition parameters
     # ----
     decision_strategy: int = model.enums.DecisionStrategy.ARG_MAX
+    construction_storage: int = model.enums.ConstructionStorage.FINE_GRAINED
 
     # ----
     # Group information

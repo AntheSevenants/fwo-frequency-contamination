@@ -109,6 +109,11 @@ class ContaminationAgent(mesa.Agent):
 
         # "iets verkeerdS"
         if (
+            self.model.params.construction_storage
+            == model.enums.ConstructionStorage.COARSE
+        ):
+            is_ambiguous = None
+        elif (
             construction == model.enums.Construction.A
             and contamination == model.enums.Contamination.NONE
         ):
@@ -120,20 +125,39 @@ class ContaminationAgent(mesa.Agent):
         hearer_agent.receive_construction(construction, contamination, is_ambiguous)
 
     def receive_construction(
-        self, construction: int, contamination: int, is_ambiguous: bool
+        self, construction: int, contamination: int, is_ambiguous: bool | None
     ):
         """Runs whenever the agent acts as a hearer. They hear a construction that is possibly contaminated. Depending on the context, the utterance may be ambiguous.
 
         Args:
             construction (int): Either of the two constructions: model.enums.Construction.A | model.enums.Construction.B
             contamination (int): Either of the two contamination states: model.enums.contamination.CONTAMINATED | model.enums.contamination.NONE
-            is_ambiguous (bool): Whether the identity of the construction can unambiguously be decided
+            is_ambiguous (bool | None): Whether the identity of the construction can unambiguously be decided. Is ambiguity is irrelevant, the value can be None.
         """
+
+        # Simple logic for coarse storage
+        if is_ambiguous is None:
+            # Little "hack" but the only part that needs influencing is Construction A
+            # Because what we really want to store is the division between A, +CONT and A, -CONT
+            # So I just redirect everything to Construction A interpretation by default
+            # This does not influence Construction B whatsoever, because it will always be uncontaminated
+            if (construction, contamination) == (
+                model.enums.Construction.B,
+                model.enums.Contamination.NONE,
+            ):
+                heard_profile = (
+                    model.enums.Construction.A,
+                    model.enums.Contamination.CONTAMINATED,
+                )
+            else:
+                heard_profile = (construction, contamination)
+
+            probs = np.array([0, 0])
 
         # if there is contamination, it does not mean there is ambiguity,
         # in some contexts the ambiguity can be overcome
         # but if there is ambiguity, we need to know
-        if is_ambiguous:
+        elif is_ambiguous:
             # P(A | contamination) ∝ P(contamination | A) * P(A)
             # P(B | contamination) ∝ P(contamination | B) * P(B)
 
