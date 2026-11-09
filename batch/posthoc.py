@@ -30,9 +30,9 @@ posthoc_operations: Dict[str, Callable[[pd.Series, Dict[str, Any]], Any]] = {
     "b_prob": lambda row, combination_data: 1 - row["a_b_split"],
     "a_cont_prod_prob": lambda row, combination_data: row["a_b_split"]
     * get_base_contaminated(row["base_contaminated"]),
-    "mean_cont": lambda row, combination_data: combination_data["contamination_median"][
-        "median"
-    ][-1][0],
+    "median_cont": lambda row, combination_data: combination_data[
+        "contamination_median"
+    ]["median"][-1][0],
     "q1_cont": lambda row, combination_data: combination_data["contamination_median"][
         "q1"
     ][-1][0],
