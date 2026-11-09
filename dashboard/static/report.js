@@ -59,8 +59,7 @@ Papa.parse(reportUrl, {
 
         table.on("rowClick", function (e, row) {
             const data = row.getData();
-            console.log(clickThroughUrl + data.combination_id);
-            window.location.href = clickThroughUrl + data.combination_id;
+            window.open(clickThroughUrl + data.combination_id, "_blank");
         });
     },
     error: function (err) {
