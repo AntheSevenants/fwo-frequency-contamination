@@ -39,7 +39,15 @@ def do_report(current_sweep: str):
 
     # Drop superfluous columns
     report_df = report_df.drop(
-        ["run_id", "iteration", "steps", "seed", "datacollector_step_size"], axis=1
+        [
+            "run_id",
+            "iteration",
+            "steps",
+            "seed",
+            "datacollector_step_size",
+            "max_steps",
+        ],
+        axis=1,
     )
 
     # Write report to file
