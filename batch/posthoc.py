@@ -30,15 +30,15 @@ posthoc_operations: Dict[str, Callable[[pd.Series, Dict[str, Any]], Any]] = {
     "b_prob": lambda row, combination_data: 1 - row["a_b_split"],
     "a_cont_prod_prob": lambda row, combination_data: row["a_b_split"]
     * get_base_contaminated(row["base_contaminated"]),
-    "contamination_mean": lambda row, combination_data: combination_data[
-        "contamination_mean"
-    ]["mean"][-1][0],
-    "contamination_q1": lambda row, combination_data: combination_data[
-        "contamination_mean"
-    ]["q1"][-1][0],
-    "contamination_q3": lambda row, combination_data: combination_data[
-        "contamination_mean"
-    ]["q3"][-1][0],
+    "mean_cont": lambda row, combination_data: combination_data["contamination_median"][
+        "median"
+    ][-1][0],
+    "q1_cont": lambda row, combination_data: combination_data["contamination_median"][
+        "q1"
+    ][-1][0],
+    "q3_cont": lambda row, combination_data: combination_data["contamination_median"][
+        "q3"
+    ][-1][0],
     "expectation": lambda row, combination_data: (
         "contamination"
         if row["a_b_split"] * get_base_contaminated(row["base_contaminated"])
@@ -46,6 +46,6 @@ posthoc_operations: Dict[str, Callable[[pd.Series, Dict[str, Any]], Any]] = {
         else "avoidance"
     ),
     "outcome": lambda row, combination_data: derive_outcome(
-        combination_data["contamination_mean"]["mean"][-1][0]
+        combination_data["contamination_median"]["median"][-1][0]
     ),
 }
