@@ -6,9 +6,9 @@ import pandas as pd
 
 
 def derive_outcome(contamination_share: float):
-    if np.isclose(contamination_share, 0):
+    if contamination_share <= 0.05:
         return "avoidance"
-    elif np.isclose(contamination_share, 1):
+    elif contamination_share >= 0.95:
         return "contamination"
     else:
         return "unclear"
