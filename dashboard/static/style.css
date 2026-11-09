@@ -134,3 +134,18 @@ main {
 #input_note:focus {
     outline: none;
 }
+
+.cell-red {
+    background-color: #FFC7CE;
+    color: #CF2D06;
+}
+
+.cell-green {
+    background-color: #DAF2D0;
+    color: #2C6153;
+}
+
+.cell-yellow {
+    background-color: #FFEB9C;
+    color: #DF8C00;
+}
