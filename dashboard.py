@@ -181,6 +181,10 @@ def show_interface(live: bool = False, report: bool = False):
         # So no selection is OK if aggregate is defined
         if no_selection and aggregate is None and combination_id is None:
             for parameter in parameter_mapping:
+                # Happens when a parameter isn't defined in another parameter set
+                if len(parameter_mapping[parameter]) == 0:
+                    continue
+
                 selected_parameters[parameter] = parameter_mapping[parameter][0]
 
             if len(parameter_mapping) > 0:
