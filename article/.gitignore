@@ -1,0 +1,9 @@
+*_files
+*.html
+*.docx
+*.pdf
+*.tex
+
+figures/
+
+tikz-tex

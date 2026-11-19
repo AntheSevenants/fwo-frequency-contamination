@@ -1,0 +1,139 @@
+---
+title: "Comparing explanations for constructional contamination using agent-based simulation and corpora"
+title-short: Contamination article
+author:
+  - name: Anthe Sevenants
+    email: anthe.sevenants@kuleuven.be
+    orcid: 0000-0002-5055-770X
+    affiliations:
+      - name: KU Leuven
+  - name: Freek Van de Velde
+    email: freek.vandevelde@kuleuven.be
+    orcid: 0000-0003-3050-2207
+    affiliations:
+      - name: KU Leuven
+  - name: Dirk Speelman
+    email: dirk.speelman@kuleuven.be
+    orcid: 0000-0003-1561-1851
+    affiliations:
+      - name: KU Leuven
+  - name: Dirk Pijpops
+    email: dirk.pijpops@uantwerpen.be
+    orcid: 0000-0002-3820-8099
+    affiliations:
+      - name: Universiteit Antwerpen
+keywords: [usage-based linguistics, construtional contamination, construction grammar, computer simulations, agent-based models, complex systems]
+format:
+  html:
+    toc: true
+    css: style.css
+    reference-location: margin
+  docx:
+    toc: false
+  latex:
+    theme: default
+    standalone: true
+    cite-method: biblatex
+    filters: []
+    documentclass: article
+    toc: false
+    reference-location: document
+    wrap: none
+    hyperrefoptions:
+      - hidelinks=true
+      - colorlinks=false
+    no-highlight: true
+    variables:
+      tight-list: false
+    tbl-cap-location: top
+    template: template.tex
+editor: source
+title-block-banner: true
+bibliography: references.bib
+toc: true
+toc-depth: 4
+toc-location: left
+tbl-cap-location: bottom
+fig-cap-location: bottom
+number-sections: true
+csl: chicago-author-date.csl
+df-print: kable
+abstract: |
+  TODO
+execute:
+  echo: false
+---
+
+## Introduction
+
+Constructional contamination is a phenomenon where the superficial formal overlap between the realisations of two constructions influences the variant distribution of one of the two constructions [@pijpops_constructional_2016; @pijpops_constructional_2018]. The contaminating construction, i.e. the construction that causes the contamination, shows formal overlap with one of the (at least) two realisations of the target construction, i.e. the construction that is being contaminated. Whenever a language user encounters the overlapping form in the contaminating construction, this also inadvertedly boosts the entrenchment [@schmid_entrenchment_2007] of the form in the other construction. As a result, the form that shows overlap with the contaminating construction gains a frequency advantage in the target construction, with the non-overlapping form being used less than expected. The term "constructional contamination" refers to both the cause (the boost process) and the effect (the distributional skew in the target construction) [@pijpops_constructional_2018, 273].
+
+To illustrate constructional contamination, we first discuss the case study from the seminal article by @pijpops_constructional_2016. In this article, @pijpops_constructional_2016 discuss how for two constructions, the partitive genitive (1) and adverb (2) in Dutch, there is superficial overlap between one of the realisations [after @pijpops_constructional_2016, 544-545]:
+
+1. *iets verkeerd(s)* gegeten  
+    [something wrong] [eaten]  
+2. *iets verkeerd* geïnterpreteerd  
+    [something] [wrongly interpreted]
+
+In (1), the partitive genitive, the adjective *verkeerd* 'wrong' modifies the indefinite pronoun *iets* 'something'. In Dutch, the partitive genitive has two realisations: one with *-s*, and one without *-s*.[^standaardtalig-karakter] Because of this, there is overlap between the realisation of the partitive genitive without *-s*, and the adverbal use of an adjective like *verkeerd* 'wrongly', which is always used without *-s*. Note that in (2), *verkeerd* modifies the participle *geïnterpreteerd*, with *iets* serving as the object on its own. Despite the fact that the sequence *iets verkeerd* crosses construction boundaries in (2), @pijpops_constructional_2016 found that the occurrence of *iets verkeerd* in the adverbal construction nonetheless boosts the use of *iets verkeerd* without *-s* in the partitive genitive.
+
+[^standaardtalig-karakter]: According to *Algemene Nederlandse Spraakkunst* [@rys_ans_2024], only the variant with *-s* is standard language, with the status of the *-s*-less variant being unclear.
+
+In addition to the partitive genitive, constructional contamination has also been shown to influence the word order in verbal clusters in Dutch. Verbs *zijn* and *worden* can function as auxiliaries, but also as copula. For example [after @pijpops_constructional_2018, 284-285]:
+
+3. PART + AUX: dat ik door haar vermoeid was  
+    that I by her tired was  
+    that I was tired by her
+4. AUX + PART: dat ik door haar was vermoeid  
+    that I by her was tired  
+    that I was tired by her
+5. ADJ + COP: dat ik heel de dag vermoeid was  
+    that I all day tired was  
+    that I was tired all day
+6. COP + ADJ: \*dat ik heel de dag was vermoeid  
+    that I all day was tired
+    that I was tired all day
+
+Examples (3) and (4) show the possible word variation between PART + AUX and AUX + PART in verbal clusters. In a predictative copular construction, the same word variation is not possible, with only ADJ + COP being valid. Certain perticiples can also function as adjectives, in which case only the ADJ + COP word order is possible. Because of the formal overlap with the PART + AUX construction, however, @pijpops_constructional_2018 [288] found that whenever a participle is often used as an adjective, the probability of the PART + AUX construction goes up, and we thus see constructional contamination.
+
+Another example also pertains to word order variation in Dutch verbal clusters. @delaby_constructional_2026 show two different constructions in Dutch that use the verb *krijgen* 'to receive'. The receptive construction with *krijgen* (examples 7 and 8) encodes a transfer meaning, while the resultative construction (examples 9 and 10) denotes the result of an action on an object [@delaby_constructional_2026, 2]. The receptive construction allows the same word order variation we saw earlier, while the resultative construction only supports the PART + AUX word order [after @delaby_constructional_2026, 2,4]:
+
+7. PART + AUX: dat we een cadeautje overhandigd kregen  
+   that we a present handed got
+   that we were handed a present
+8. AUX + PART: dat we een cadeautje kregen overhandigd  
+   that we a present got handed  
+   that we were handed a present
+9. PART + AUX: dat we de auto gestart kregen  
+    that we the car started got  
+    that we got the car started
+10. AUX + PART: (?) dat we de auto kregen gestart  
+    that we the car got started  
+    that we got the car started
+
+@delaby_constructional_2026 found a skew towards the PART + AUX order for verbs that are common to the resultative construction, which is again evidence for constructional contamination.
+
+Our final example comes from English. @hilpert_case_2022 looked at the placement of adverbs in English. The authors discuss the placement of adverbs in passive sentences, where adverbs can appear either in front or behind the participle (examples 11-12). In a noun phrase, however, adverbs can only appear in initial position (examples 13-14) [after @hilpert_case_2022, 284]:
+
+11. Stainless steels are extensively used in petrochemical plants.
+12. Stainless steels are used extensively in petrochemical plants.
+13. an extensively used technique
+14. \*a used extensively technique
+
+Combinations of adverbs and participles that frequently occur as adverb-initial sequences in noun phrases are also more likely to appear as adverb-initial in passive sentences. Here as well, there is contamination from one context to another, in this case from the noun phrase to passive sentences.
+
+The several examples across both Dutch and English show clearly that constructional contamination is a "wide-spread phenomenon" [@pijpops_constructional_2018, 296]. The mechanism behind the contamination process is less clear, however. In this article, we design an agent-based model (ABM) through which we compare two possible explanations for the constructional contamination. The predictions we draw from the ABM, we will then test empirically in a corpus study.
+
+## Explanations for constructional contamination
+
+In order to be able to better reason about the precise mechanism behind constructional constmination, we introduce the formal description used in @pijpops_constructional_2018 [272-275]. On the construction level, we distinguish between the target construction T and the contaminating construction $C$. One variant of the target construction $T$ is $TX$, the other $TY$[^construction-order]. To retain parity with @pijpops_constructional_2018, we assign to $TX$ the variant that shows formal overlap with $C$. As the contaminating construction is restricted to one variant only, it does not have further distinctions. There are also several distinctions on the instance level. In this case, the term "instance" refers to individual lexemes which can appear in both constructions. For the target construction $T$, we use $t_0$ to refer to instances that never show resemblance to the contaminating construction $C$, and $t_1$ to refer to instances that *can* show resemblance to $C$. Of those instances $t_1$, $tx_1$ are the instances of variant $TX$, $ty_1$ are the instances of variant $TY$. To refer to instances of the contaminating construction $C$, we use $c_1$. Constructional contamination is defined as the situation in which instances $t_1$ are skewed in their distribution of $tx_1$ and $ty_1$, with a distributional skew in favour of $tx_1$ compared to $t_0$.
+
+Applied to our example from Dutch, the partitive genitive is the target construction $T$. The variant without *-s* we can refer to as $TX$, the variant with *-s* as $TY$. Since the construction with the adverb influences the partitive genitive construction, it is the contaminating construction $C$. Lexemes that do not show formal overlap between the two constructions are instances $t_0$ (e.g. *leuk*, because it rarely occurs as an adverb). Other lexemes (e.g. *verkeerd*) are instances $t_1$, of which the forms without *-s* are $tx_1$ and the forms without *-s* are $ty_1$. Adverbial instances are always $c_1$.
+
+With these formal definitions, we turn to the possible explanations for constructional contamination. The leading explanation [@pijpops_constructional_2016, 550] points to a combination of shallow parsing [@ferreira_good-enough_2002; @dabrowska_recycling_2014] and chunking [@bybee_language_2010, 76]. Rather than parsing sentences completely and accurately, language users are thought to rely heavily on sequences they have encountered before. As a result, they are assumed to inadvertedly boost the frequency of chunks which are shared with other constructions due coincidental formal overlap. In short, instances of $C$ boost the frequency of a chunk they share with $TX$, which causes constructional contamination within $T$.
+
+Another, simpler explanation solely assumes that in ambiguous sentences, i.e. sentences where the language user cannot reliably distinguish between two constructions, the most likely analysis is chosen according to the frequency counts of both constructions. This implies that instances of $C$ (intended) are sometimes mistaken for $TX$ (understood), which boosts the frequency of $TX$ within $T$ and causes constructional contamination. An important counterargument to this explanation, however, is that instances of $TX$ (intended) can be mistaken for $C$ (understood) just the same, correcting for the boost assumed to help $TX$. In order for the ambiguity-based explanation to work, the boost to $TX$ and the loss to $C$ needs to outweight the boost to $C$, and the loss to $TX$.
+
+In this article, we explore with an agent-based model what contamination behaviour we see when we implement both the chuking-based explanation and the ambiguity-based explanation. For the ambiguity-based explanation specifically, we want to know specificially if and when the boost to $TX$ can outweight the loss to $C$.
+
+## Agent-based simulations
