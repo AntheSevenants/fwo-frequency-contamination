@@ -28,6 +28,8 @@ def build_mapping(
             continue
 
         unique_values = run_infos[column].unique().tolist()
+        # Ignore nan values
+        unique_values = [x for x in unique_values if str(x) != "nan"]
         unique_values.sort()
         # If there is only one unique value, there is nothing to set
         # This means for this sweep, this parameter is a constant

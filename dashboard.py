@@ -171,7 +171,6 @@ def show_interface(live: bool = False, report: bool = False):
                     )
                 )
 
-                print("woe")
                 return redirect(
                     url_for("index", _external=False, **selected_parameters)
                 )
@@ -181,10 +180,13 @@ def show_interface(live: bool = False, report: bool = False):
         # So no selection is OK if aggregate is defined
         if no_selection and aggregate is None and combination_id is None:
             for parameter in parameter_mapping:
+                # Happens when a parameter isn't defined in another parameter set
+                if len(parameter_mapping[parameter]) == 0:
+                    continue
+
                 selected_parameters[parameter] = parameter_mapping[parameter][0]
 
             if len(parameter_mapping) > 0:
-                print("welle weg")
                 return redirect(
                     url_for("index", _external=False, **selected_parameters)
                 )
@@ -192,8 +194,6 @@ def show_interface(live: bool = False, report: bool = False):
                 no_selection = False
         elif no_selection and aggregate is not None:
             no_selection = False
-
-        print("b", combination_id)
 
         # These are runs that adhere to the parameter selection made
         selected_runs = export.parameters.find_eligible_runs(

@@ -11,6 +11,8 @@ import batch.combination
 import batch.aggregate
 import batch.posthoc
 
+import export.parameters
+
 from tqdm.auto import tqdm
 from collections import defaultdict
 
@@ -18,9 +20,13 @@ SWEEPS_DIR = "sweeps/"
 
 
 def do_report(current_sweep: str):
-    run_infos = export.sweeps.get_run_infos(SWEEPS_DIR, current_sweep)
+    run_infos = export.sweeps.get_run_infos(
+        SWEEPS_DIR, current_sweep, hashable_safe=True
+    )
     # Aggregate so only unique combinations remain
     report_df = run_infos.groupby("combination_id").first().reset_index()
+
+    parameters, constants = export.parameters.build_mapping(run_infos)
 
     new_cols = defaultdict(list)
     for index, row in tqdm(
@@ -39,7 +45,16 @@ def do_report(current_sweep: str):
 
     # Drop superfluous columns
     report_df = report_df.drop(
-        ["run_id", "iteration", "steps", "seed", "datacollector_step_size"], axis=1
+        [
+            "run_id",
+            "iteration",
+            "steps",
+            "seed",
+            "datacollector_step_size",
+            "max_steps",
+        ]
+        + list(constants.keys()),
+        axis=1,
     )
 
     # Write report to file
