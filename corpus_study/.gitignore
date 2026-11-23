@@ -1,0 +1,14 @@
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+
+output/
+data/
+
+quarto
+
+*.tex
+*.docx
+*.html
+*.pdf

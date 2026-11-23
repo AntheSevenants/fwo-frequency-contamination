@@ -1,0 +1,29 @@
+FROM anthesevenants/fwo-frequency-contamination:base
+# We start from the R Studio base
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    pkg-config \
+    libuv1-dev \
+    libcurl4-openssl-dev \
+    libssl-dev \
+    libxml2-dev \
+    lsof \
+    pandoc
+
+USER rstudio
+RUN R -q -e "install.packages(c('rmarkdown', 'knitr', 'tinytex'), \
+    lib = '/usr/local/lib/R/site-library', \
+    repos = 'https://cloud.r-project.org')" \
+    && R -q -e "tinytex::install_tinytex()"
+
+RUN R -q -e "library(rmarkdown)"
+
+RUN mkdir -p /home/rstudio/fwo-frequency-contamination/ \
+    && mkdir -p /home/rstudio/.local/share/rstudio/projects_settings/
+# && mkdir -p /root/.local/share/rstudio/projects_settings/
+
+RUN echo "setwd('/home/rstudio/fwo-frequency-contamination/')" > /home/rstudio/.Rprofile \
+    && echo "/home/rstudio/fwo-frequency-contamination/fwo-frequency-contamination.Rproj" > /home/rstudio/.local/share/rstudio/projects_settings/last-project-path
+
+USER root
