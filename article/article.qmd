@@ -64,7 +64,7 @@ execute:
   echo: false
 ---
 
-## Introduction
+## Introduction {#sec-introduction}
 
 Constructional contamination is a phenomenon where the superficial formal overlap between the realisations of two constructions influences the variant distribution of one of the two constructions [@pijpops_constructional_2016; @pijpops_constructional_2018]. The contaminating construction, i.e. the construction that causes the contamination, shows formal overlap with one of the (at least) two realisations of the target construction, i.e. the construction that is being contaminated. Whenever a language user encounters the overlapping form in the contaminating construction, this also inadvertedly boosts the entrenchment [@schmid_entrenchment_2007] of the form in the other construction. As a result, the form that shows overlap with the contaminating construction gains a frequency advantage in the target construction, with the non-overlapping form being used less than expected. The term "constructional contamination" refers to both the cause (the boost process) and the effect (the distributional skew in the target construction) [@pijpops_constructional_2018, 273].
 
@@ -124,7 +124,7 @@ Combinations of adverbs and participles that frequently occur as adverb-initial 
 
 The several examples across both Dutch and English show clearly that constructional contamination is a "wide-spread phenomenon" [@pijpops_constructional_2018, 296]. The mechanism behind the contamination process is less clear, however. In this article, we design an agent-based model (ABM) through which we compare two possible explanations for the constructional contamination. The predictions we draw from the ABM, we will then test empirically in a corpus study.
 
-## Explanations for constructional contamination
+## Explanations for constructional contamination {#sec-explanations}
 
 In order to be able to better reason about the precise mechanism behind constructional constmination, we introduce the formal description used in @pijpops_constructional_2018 [272-275]. On the construction level, we distinguish between the target construction T and the contaminating construction $C$. One variant of the target construction $T$ is $TX$, the other $TY$[^construction-order]. To retain parity with @pijpops_constructional_2018, we assign to $TX$ the variant that shows formal overlap with $C$. As the contaminating construction is restricted to one variant only, it does not have further distinctions. There are also several distinctions on the instance level. In this case, the term "instance" refers to individual lexemes which can appear in both constructions. For the target construction $T$, we use $t_0$ to refer to instances that never show resemblance to the contaminating construction $C$, and $t_1$ to refer to instances that *can* show resemblance to $C$. Of those instances $t_1$, $tx_1$ are the instances of variant $TX$, $ty_1$ are the instances of variant $TY$. To refer to instances of the contaminating construction $C$, we use $c_1$. Constructional contamination is defined as the situation in which instances $t_1$ are skewed in their distribution of $tx_1$ and $ty_1$, with a distributional skew in favour of $tx_1$ compared to $t_0$.
 
@@ -137,3 +137,99 @@ Another, simpler explanation solely assumes that in ambiguous sentences, i.e. se
 In this article, we explore with an agent-based model what contamination behaviour we see when we implement both the chuking-based explanation and the ambiguity-based explanation. For the ambiguity-based explanation specifically, we want to know specificially if and when the boost to $TX$ can outweight the loss to $C$.
 
 ## Agent-based simulations
+
+In order to investigate the mechanics behind constructional contamination, we implement two possible explanations using an agent-based model. Agent-based models [@steels_modeling_2011; @ohmer_communication_2025] allow us to program virtual people, also called "agents", in a virtual world. Then, we have these agents communicate with each other according to predefined rules, a step which is often called a "language game" [@smith_models_2014]. Communication between agents is relatively simple, but this is by design. By stripping the model world of the noise typically associated with the real world, we can better focus on the problem at hand [@ohmer_communication_2025, 313], in this case constructional contamination. For us, this means that the vocabulary of the agents as well as their cognitive capacities will be limited to what is relevant for constructional contamination. As a result of the communication between agents, we expect some sort of emergent behaviour to arise, i.e. a boost to $TX$ or to $C$. The big advantage of using an agent-based model for this purpose is that, while the model world is of course simplified, the causality in the small model world is guaranteed. By switching out different parameters in the model (i.e. the frequency distribution between $T$ and $C$, the distribution between $TX$ and $TY$), we can directly assess the impact of different parameter values on the simulation outcome, which in turn allows us to reason about these aspects in the inner workings of constructional contamination.
+
+In the next two sections, we will detail how we built both the chunking-based model and the ambiguity-based model. Both models were implemented using Python and the MESA library [@kazil_utilizing_2020]. Gemma 4 26B A4B[^gemma-link] was used for help with programming (i.e. how to stack vectors in numpy?) and help with the tikz figures, but generated code was never used as-is. All source code is available online.[^github-link]
+
+[^gemma-link]: https://huggingface.co/unsloth/gemma-4-26B-A4B-it-GGUF/blob/main/gemma-4-26B-A4B-it-UD-IQ4_XS.gguf
+[^github-link]: https://github.com/AntheSevenants/fwo-frequency-contamination
+
+### Chunking-based model
+
+#### Model design, language game and course of the simulation
+
+First, we discuss the cognitive capabilities of our agents. In the chunking-based explanation, language users are assumed to store frequencies for chunks rather than for individual variants of different constructions (see @sec-explanations). Therefore, in the chunking-basd model, agents can only keep track of the chunk corresponding to $TX$ and $C$, and the chunk corresponding to $TY$. In the case of the Dutch partitive genitive, this would be comparable to the form without *-s* and with *-s* respectively.
+
+Because the decision system in our agent-based models will be Bayesian (see below), we decided not to store frequency counts as-is, but rather as probabilities in a so-called "beliefs system". In the case of the chunking-based model, this means that the preference between the two possible chunks will be stored as probabilities that sum to one. @tbl-agent-memory-chunking shows an example of the probability encoding for an agent in this model. Every agent in the model has their own probabilitiy distribution. Note that, since $C$ can only appear in one variant, the probability sensitivity will not be relevant for the production of $C$.
+
+| Chunk associated with $TX$ and $C$ | Chunk associated with $TY$ |
+| --- | --- |
+| 0.20 | 0.80 |
+: An example of the encoding of the probability of two chunks in the agents' memories in the chunking-based model. {#tbl-agent-memory-chunking}
+
+The $N = 10$ agents in our simulation are initialised with the same beliefs system, which in this case means that all agents share the same initial probability between the two chunks. This division is determined by a parameter $\omega$ ($\ge 0, \lt1$). If $\omega$ is set to $0.2$, the initial beliefs system would correspond to the one shown in @tbl-agent-memory-chunking. Once the model is initialised, agents start conversing with each other, i.e. play the language game. At each model time step, every agent (acting as the speaker) talks to another randomly selected agent (acting as the hearer), in a random order. Due to the random selection procedure, it is possible that certain agents act as hearers multiple times within the same time step. After all agents have had the chance to speak, the agents can converse anew, again in a random order. The more time advances in the model, the more conversations agents thus will have had with each other.
+
+The language game between speaker and hearer occurs as follows. Once speaker and hearer have been selected, the speaker first has to decide whether they will utter construction $T$ or $C$. The probability for this decision is regulated by parameter $\alpha$ ($\ge 0, \lt1$) and remains constant throughout the simulation. Constructional contamination does not prescribe that the probability of uttering, say, a partitive genitive or adverb changes as a result of formal overlap. The need to utter a specific construction emanates from the real world, and we assume this need remains constant despite potential contamination. If $\alpha$ is set to $0.6$, then agents will utter construction $T$ in 60% of cases. If the speaker chooses to utter construction $C$, they cannot choose between variants, so they always utter the chunk associated with both $C$ and $TX$. If the speaker chooses to utter construction $T$, they have the choice between that same chunk corresponding to $C$ or $TX$, or the chunk corresponding to $TY$. The choice between the two chunks is made based on the probabilities of the beliefs system exemplified in @tbl-agent-memory-chunking. The chosen chunk is then communicated to the hearer.
+
+Next, the hearer "hears" the utterance made by the speaker. In the chunking-based model, no disambiguation is necessary, so the hearer only has to update their beliefs system according to what they just heard. The update mechanism works according to an Exponential Moving Average. For example, if the hearer hears the chunk associated with $TY$, we generate a new probability for the chunk of $TY$ according to @eq-update:
+
+$$
+\begin{aligned}
+  &x_\text{observed} \in \{0, 1\} \\
+  &p_{new} = p_{old} + \lambda(x_t - p_{old})
+  \end{aligned}
+$$ {#eq-update}
+
+In this case, we observe a probability $1$ for chunk $TY$ ($x_\text{observed}$). We generate a new probability $p_{new}$ based on the sum of the old probability $p_{old}$ and the difference with the observed probability $x_\text{observed}$, multiplied by a learning rate $\lambda$. $\lambda$ controls how fast the beliefs of an agent update when they encounter a chunk. To keep the behaviour of the agents stable, we decided to pin $\lambda$ at $0.01$. Conversely, if the agent observed the chunk associated with $TY$, they did not observe the other chunk associated with $TX$ and $C$, so its probability is updated with observed probability $0$.
+
+#### Results and evaluation
+
+As we discussed earlier, computer simulations allow us to reason about causality within the model world. In order to estimate the influence of the different parameters, we varied the parameters shown in @tbl-chunking-parameters in the simulation.
+
+| Parameter | Explanation | Values |
+| --- | --- | --- |
+| $\alpha$ | Probability of $T$. Probability of $C$ is $1 - \alpha$ | $0.2$, $0.4$, $0.5$, $0.6$, $0.8$ |
+| $\omega$| Probability of $TX$. Probability of $TY$ is $1 - \omega$ | $0.0$, $0.2$, $0.4$, $0.5$, $0.6$, $0.8$|
+: An overview of all parameters in the simulation and their values, for the chunking-based model. {#tbl-chunking-parameters}
+
+Due to the probabilistic nature of the simulation, we tested every unique combination of parameters 100 times. In all model behaviour graphs in this article, we show an aggregation across these 100 runs for each combination. For each combination, we show the median, and the interquartile range Q1 and Q3.
+
+- Voorstelling model.
+- Resultaten.
+- Voorspelling: des te vaker een woord voorkomt in de C en des te minder vaak in T, des te vaker de -s wegvalt.
+
+### Ambiguity-based model
+
+#### Model design, language game and course of the simulation
+
+The beliefs system for the ambiguity-based model is more intricate, since in the ambiguity-based model, agents do not store chunks. Rather, agents are sensitive to the probability of both $T$ and $C$, and separately to the probability of $TX$ and $TY$. The initial sensitivity to $T$ and $C$ is taken from parameter $\alpha$, but can change over time. Here as well, the initial distribution between $TX$ and $TY$ is regulated by parameter $\omega$. If $\alpha$ is set to $0.2$, and $\omega$ to $0.7$, the initial beliefs system would correspond to the one shown in @tbl-agent-memory-ambiguity.
+
+| Construction $T$ | | Construction $C$ |
+| --- | --- | --- |
+| 0.2 | 0.8 ||
+| Construction $TX$ | Construction $TY$ | ^^ |
+| 0.7 | 0.3 | 1 |
+: An example of the encoding of the probability of constructions $T$ and $C$, and $TX$ and $TY$ in the ambiguity-based model. {#tbl-agent-memory-ambiguity}
+
+The language game played by speaker and hearer also differs from the one in the chuking-based model. First, the speaker still has to decide whether to utter construction $T$ or $C$, a choice which remains regulated by parameter $\alpha$. If $T$ was chosen, the speaker further chooses between $TX$ and $TY$ based on the stored probabilities. If $C$ was chosen, no such choice is made.
+
+Finally, at the start of each conversation, it is determined whether the utterance made by the speaker will be of ambiguous nature. This is not a decision made by the speaker, but rather again a property that we assume arises organically from some situation in the real world. In order to be able to assess the influence of ambiguity on constructional contamination, we define ambiguity parameter $\epsilon$, with separate ambiguity values for $TX$ and $C$. If $\epsilon_{TX}$ = $0.5$, 50% of $TX$ utterances will be ambiguous. Since $TY$ by definition is a distinct construction without formal overlap, this construction will never be ambiguous.
+
+Next, the hearer again "hears" the utterance made by the speaker. If the utterance is unambiguous, probabilities at both the construction and variant level are immediately updated according to @eq-update. If the utterance is ambiguous (i.e. because $TX$ or $C$ were uttered), the hearer first runs a Bayesian maximum likelihood estimation (shown in @eq-bayesian) to decide which construction was most likely intended. The construction with the highest probability[^bayes-note] is chosen as the heard construction.
+
+[^bayes-note]: Technically speaking, we skip part of the Bayesian equation by not calculating the denominator $p(\text{overlap variant})$. This makes our formulas compute a score rather than a probability. The division operation is superfluous, because it is equal across the two computations (hence the operator $\propto$).
+
+$$
+\begin{aligned}
+  &p(TX \mid \text{overlap variant}) \propto p(\text{overlap variant} \mid T) \cdot p(T) \\
+  &p(C \mid \text{overlap variant}) \propto p(\text{overlap variant} \mid C) \cdot p(C)
+\end{aligned}
+$$ {#eq-bayesian}
+
+#### Results and evaluation
+
+For this model as well, we varied several parameters, given in @tbl-ambiguity-parameters. All possible combinations were tested 100 times.
+
+| Parameter | Explanation | Values |
+| --- | --- | --- |
+| $\alpha$ | Probability of $T$. Probability of $C$ is $1 - \alpha$ | $0.2$, $0.4$, $0.5$, $0.6$, $0.8$ |
+| $\omega$| Probability of $TX$. Probability of $TY$ is $1 - \omega$ | $0.0$, $0.2$, $0.4$, $0.5$, $0.6$, $0.8$|
+| $\epsilon_{TX}$ | Ambiguity of utterances with construction $TX$. | $0.2$, $0.8$ |
+| $\epsilon_{C}$ | Ambiguity of utterances with construction $C$. | $0.2$, $0.8$ |
+: An overview of all parameters in the simulation and their values, for the ambiguity-based model. {#tbl-ambiguity-parameters}
+
+- Resultaten.
+- De ‘boost’ weegt harder door dan het ‘verlies’ wanneer het lexeem in kwestie frequenter is in TX dan in C. Het ‘verlies’ weegt harder door dan de ‘boost’ wanneer het lexeem in kwestie frequenter is in C dan in TX. Dat leidt tot de volgende voorspellingen
+    - Bij lexemen waar TX frequenter is dan C verwachten we sterkere constructionele contaminatie dan bij lexemen waar C frequenter is dan TX
+    - In Nederland verwachten we minder constructionele contaminatie dan in België omdat TX daar zo onbekend is (bij de partitieve genitief)[DP2.1]
