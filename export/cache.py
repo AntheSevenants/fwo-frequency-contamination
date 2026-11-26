@@ -62,7 +62,7 @@ def make_temp_runs_figures_dir(
     combination_id: str,
     figures_output_dir: str,
     single_run_id: Optional[int] = None,
-    selected_step: int | None = None,
+    selected_step: int | float | None = None,
 ) -> str:
     """Create the directory where figures for this sweep and parameter combination will be stored temporarily.
 
@@ -71,7 +71,7 @@ def make_temp_runs_figures_dir(
         combination_id (str): Unique ID for the parameter selection
         figures_output_dir (str): Path to where figures are stored
         single_run_id (Optional[int], optional): ID of the single run, if applicable. Defaults to None.
-        selected_step (int). Number of the step being inspected. Defaults to None for the default step.
+        selected_step (int | float). Number of the step being inspected. Defaults to None for the default step.
 
     Returns:
         str: Path to where figures will be stored for the selected sweep and parameter combination
@@ -121,7 +121,7 @@ def is_graph_in_cache(
     profile_name: str,
     figures_output_dir: str,
     single_run_id: Optional[int] = None,
-    selected_step: int | None = None,
+    selected_step: int | float | None = None,
 ) -> bool:
     """Check whether the specified graph was already created for this sweep and parameter selection
 
@@ -130,7 +130,7 @@ def is_graph_in_cache(
         combination_id (str): Unique ID for the parameter selection
         graph_name (str): Name of the graph to check
         single_run_id (int, optional). Unique ID when singling out a single run. Defaults to None.
-        selected_step (int). Number of the step being inspected. Defaults to None for the default step.
+        selected_step (int | float). Number of the step being inspected. Defaults to None for the default step.
 
     Returns:
         bool: Whether the specified graph is cached
@@ -159,7 +159,7 @@ def get_cached_graphs(
     profile_name: str,
     figures_output_dir: str,
     single_run_id: Optional[int] = None,
-    selected_step: int | None = None,
+    selected_step: int | float | None = None,
 ) -> List[str]:
     """Retrieve a list of all cached graphs for the selected sweep with the specified parameter selection ID
 
@@ -170,7 +170,7 @@ def get_cached_graphs(
         profile_name (str): Name of the selected profile
         figures_output_dir (str): Path where figures are written
         single_run_id (int, optional). Unique ID when singling out a single run. Defaults to None.
-        selected_step (int). Number of the step being inspected. Defaults to None for the default step.
+        selected_step (int | float). Number of the step being inspected. Defaults to None for the default step.
 
     Returns:
         List[str]: List of names with all cached graphs

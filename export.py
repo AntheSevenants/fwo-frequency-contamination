@@ -69,7 +69,13 @@ parser.add_argument(
     help="Manually add an overlay group to an aggregate graph. Can be used multiple times. Format: key=value",
 )
 parser.add_argument(
-    "--step", type=int, help="Inspect the model at a specific step", default=None
+    "--step", type=float, help="Inspect the model at a specific step", default=None
+)
+parser.add_argument(
+    "--max_step",
+    type=float,
+    help="Limit runs to a specific step",
+    default=None,
 )
 parser.add_argument(
     "--legend_titles",
@@ -121,9 +127,14 @@ aggregate = args.aggregate
 aggregate_diy = args.aggregate_diy
 parameter_set = args.parameter_set
 selected_run = args.run
+
 selected_step = None
 if args.step is not None:
-    selected_step = int(args.step)
+    selected_step = float(args.step)
+
+max_step = None
+if args.max_step is not None:
+    max_step = float(args.max_step)
 
 selected_parameters = {}
 if args.filter:
@@ -137,7 +148,7 @@ if args.overlay:
 combination_ids = None
 
 run_infos = export.sweeps.get_run_infos(
-    args.sweeps_dir, selected_sweep
+    args.sweeps_dir, selected_sweep, hashable_safe=True
 )
 sweep_info = export.sweeps.get_sweep_info(args.sweeps_dir, selected_sweep)
 
@@ -242,6 +253,8 @@ export.render.prerender_profile_graphs(
     aggregate_diy=aggregate_diy,
     overlay_ids=overlay_ids,
     selected_run=selected_run,
+    selected_step=selected_step,
+    max_step=max_step,
     exporting=True,
     disable_title=args.disable_titles,
     legend_titles_override=args.legend_titles,

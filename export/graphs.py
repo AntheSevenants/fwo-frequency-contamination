@@ -356,7 +356,8 @@ def generate_graphs(
     graphs: List[str],
     aggregate: Optional[AggregateSettings] = None,
     single_run: Optional[int] = None,
-    selected_step: int | None = None,
+    selected_step: int | float | None = None,
+    max_step: int | float | None = None,
     disable_title=False,
     legend_titles: List[str] | None = None,
     legend_colour_labels: List[str] | None = None,
@@ -373,7 +374,8 @@ def generate_graphs(
         graphs (List[str]): List of names of the graphs to be generated
         aggregate (AggregateSettings, optional): Configuration for aggregate graphs. Defaults to None.
         single_run (int, optional): ID of the single run to generate a graph for. Defaults to None.
-        selected_step (int). Number of the step being inspected. Defaults to None for the default step.
+        selected_step (int | float). Number of the step being inspected. Defaults to None for the default step.
+        max_step (int | float). Data is truncated to this step when supplied. Defaults to None for no truncation.
         disable_title (bool, optional): Whether to show a title for this graph. Defaults to False.
         legend_title (str, optional): Set a legend title when aggregating. For more elaborate legends, multiple titles can be supplied. Defaults to None.
         legend_colour_labels (List[str], optional): Set the legend colour labels when aggregating. Defaults to None.
@@ -459,10 +461,11 @@ def generate_graphs(
     return generate_graphs_inner(
         data,
         graphs,
-        aggregate,
-        single_run,
-        selected_step,
-        scale_factor,
+        aggregate=aggregate,
+        single_run=single_run,
+        selected_step=selected_step,
+        max_step=max_step,
+        scale_factor=scale_factor,
         y_max=y_max,
         y_min=y_min,
         disable_title=disable_title,
@@ -474,12 +477,36 @@ def generate_graphs(
     )
 
 
+def scale_step(
+    selected_step: int | float | None, scale_factor: int
+) -> int | float | None:
+    """Scale a step according to the scale factor. Ratios are passed as-is and are only computed later.
+
+    Args:
+        selected_step (int | float | None): The step to convert
+        scale_factor (int): The scale factor
+
+    Returns:
+        int | float | None: The scaled step, or the step as-is if it doesn't need to be scaled
+    """
+
+    if selected_step is not None:
+        # Ignore ratios
+        if selected_step > 0 and selected_step < 1:
+            pass
+        else:
+            selected_step = selected_step // scale_factor
+
+    return selected_step
+
+
 def generate_graphs_inner(
     data: Union[dict[str, Any], pd.DataFrame],
     graphs: List[str],
     aggregate: Optional[AggregateSettings] = None,
     single_run: Optional[int] = None,
-    selected_step: int | None = None,
+    selected_step: int | float | None = None,
+    max_step: int | float | None = None,
     scale_factor: int = 1,
     y_max: int = 100,
     y_min: int = 0,
@@ -494,9 +521,9 @@ def generate_graphs_inner(
     # Now, we can build the desired graphs and save them
     graphs_output = {}
 
-    # Scale selected step by scale factor
-    if selected_step is not None:
-        selected_step = selected_step // scale_factor
+    # Scale steps by scale factor
+    selected_step = scale_step(selected_step, scale_factor)
+    max_step = scale_step(max_step, scale_factor)
 
     # We go over all requested graphs and generate them
     for graph_name in graphs:
@@ -529,6 +556,7 @@ def generate_graphs_inner(
                         aggregate_config=aggregate,
                         single_run=single_run,
                         selected_step=selected_step,
+                        max_step=max_step,
                         parent_extra_args=parent_extra_args,
                         y_max=y_max,
                         y_min=y_min,
@@ -557,6 +585,7 @@ def generate_graphs_inner(
                 aggregate_config=aggregate,
                 single_run=single_run,
                 selected_step=selected_step,
+                max_step=max_step,
                 y_max=y_max,
                 y_min=y_min,
                 disable_title=disable_title,
@@ -579,7 +608,8 @@ def generate_inner_lambda(
     y_max: int = 100,
     y_min: int = 0,
     single_run: Optional[int] = None,
-    selected_step: int | None = None,
+    selected_step: int | float | None = None,
+    max_step: int | float | None = None,
     aggregate_config: Optional[AggregateSettings] = None,
     parent_extra_args: Dict[str, Any] | None = None,
     disable_title: bool = False,
@@ -595,7 +625,8 @@ def generate_inner_lambda(
         data (Union[Dict[str, Any], pd.DataFrame]): Data dump of a specific parameter combination, or combinations
         graph_name (str): Name of the graph to generate the function for
         single_run (int, optional): ID of the single run to plot. Defaults to None.
-        selected_step (int). Number of the step being inspected. Defaults to None for the default step.
+        selected_step (int | float). Number of the step being inspected. Defaults to None for the default step.
+        max_step (int | float). Data is truncated to this step when supplied. Defaults to None for no truncation.
         aggregate_config (AggregateSettings, optional): Configuration for aggregate graphs. Defaults to None.
         parent_extra_args (Dict[str, Any] | None): Extra arguments supplied by the parent mosaic. Defaults to None.
         disable_title (bool): Whether to show a title for this graph. Defaults to False.
@@ -631,6 +662,9 @@ def generate_inner_lambda(
         for interactive_arg_name in config.interactive_args:
             if interactive_arg_name == "step" and selected_step is not None:
                 extra_args["step"] = selected_step
+
+    if max_step is not None:
+        extra_args["max_step"] = max_step
 
     if len(extra_args) > 0:
         for arg_name, arg_func in extra_args.items():

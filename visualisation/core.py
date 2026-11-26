@@ -240,20 +240,23 @@ def filter_for_agent(
 
 
 def get_value_lists(
-    data: Union[
-        model.model.ContaminationModel,
-        Union[List[float], List[List[float]]],
-        List[List[List[float]]],
-    ],
-    attributes: Union[str, List[str]],
-    agent_filter: Optional[int] = None,
+    data: (
+        model.model.ContaminationModel
+        | List[float]
+        | List[List[float]]
+        | List[List[List[float]]]
+    ),
+    attributes: str | List[str],
+    agent_filter: int | None = None,
+    max_step: int | float | None = None,
 ) -> List[np.ndarray]:
     """Return a list of values based on a model instance or a list of values
 
     Args:
-        data (Union[model.model.ContaminationModel, List[float], List[List[float]]], List[List[List[float]]]]): Either a model instance or a list of values
-        attributes (Union[str, List[str]]]): The names of the series to plot. Always supply, even if input data is not a model, so dimensionality of the data can be assessed.
-        agent_filter (Optional[int], optional): The index of the agent you want to filter for. If not supplied, no filtering is applied. Defaults to None.
+        data (model.model.ContaminationModel | List[float] | List[List[float]] | List[List[List[float]]]): Either a model instance or a list of values
+        attributes (str | List[str]): The names of the series to plot. Always supply, even if input data is not a model, so dimensionality of the data can be assessed.
+        agent_filter (int): The index of the agent you want to filter for. If not supplied, no filtering is applied. Defaults to None.
+        max_step (int | float): Upper bound step for the graph (on the scale of the datacollector). Can also be a fraction, will be converted to an absolute step. Defaults to None (= all steps).
 
     Raises:
         ValueError: Attribute must be specified when plotting data from a model instance.
@@ -310,20 +313,29 @@ def get_value_lists(
             # Assume a valid list of data
             value_lists.append(np.array(value_list))
 
+    # Truncate dataset length if required
+    if max_step is not None:
+        _max_step = convert_step(max_step, len(value_lists[0]))
+
+        for i in range(len(value_lists)):
+            value_lists[i] = value_lists[i][:_max_step]
+
     return value_lists
 
 
 def check_min_max_data(
-    data: Union[model.model.ContaminationModel, List[float], List[List[float]]],
-    min_data: Union[List[float], List[List[float]], None],
-    max_data: Union[List[float], List[List[float]], None],
+    data: model.model.ContaminationModel | List[float] | List[List[float]],
+    min_data: List[float] | List[List[float]] | None,
+    max_data: List[float] | List[List[float]] | None,
+    max_step: int | float | None = None,
 ) -> Union[Tuple[np.ndarray, np.ndarray], Tuple[None, None]]:
     """Check the supplied minimal and maximal value lists and raise errors if the supplied data does not make sense.
 
     Args:
-        data (Union[model.model.ContaminationModel, List[float]], List[List[float]]): Either a model instance or a list of values
-        min_data (Union[List[float], List[List[float]], None]): List of minimal values. Needs to be defined together with max_data.
-        max_data (Union[List[float], List[List[float]], None]): List of maximal values. Needs to be defined together with min_data.
+        data (model.model.ContaminationModel | List[float] | List[List[float]]): Either a model instance or a list of values
+        min_data (List[float] | List[List[float]] | None): List of minimal values. Needs to be defined together with max_data.
+        max_data (List[float] | List[List[float]] | None): List of maximal values. Needs to be defined together with min_data.
+        max_step (int | float): Upper bound step for the graph (on the scale of the datacollector). Can also be a fraction, will be converted to an absolute step. Defaults to None (= all steps).
 
     Raises:
         ValueError: Data cannot be a model instance if min_data and max_data are defined
@@ -350,6 +362,23 @@ def check_min_max_data(
         raise ValueError("min_data cannot be None if max_data is set")
 
     if max_data is not None and min_data is not None:
+        if isinstance(data, model.model.ContaminationModel):
+            raise ValueError("This error is to satisfy the type checker")
+
+        # Truncate dataset length if required
+        if max_step is not None:
+            if isinstance(max_data[0], float):
+                _max_step = convert_step(max_step, len(max_data))
+
+                max_data = max_data[:_max_step]
+                min_data = min_data[:_max_step]
+            elif isinstance(max_data[0], list):
+                _max_step = convert_step(max_step, len(max_data[0]))
+
+                for i in range(len(max_data)):
+                    max_data[i] = max_data[i][:_max_step]  # type: ignore
+                    min_data[i] = min_data[i][:_max_step]  # type: ignore
+
         return np.array(min_data), np.array(max_data)
 
     return None, None
@@ -366,6 +395,7 @@ def plot_value(
     min_data: List[float] | List[List[float]] | None = None,
     max_data: List[float] | List[List[float]] | None = None,
     step: int | float | None = None,
+    max_step: int | float | None = None,
     title: Optional[str] = None,
     legend_titles: List[str] | None = None,
     legend_colour_labels: List[str] | None = None,
@@ -391,6 +421,7 @@ def plot_value(
         min_data (List[float] | List[List[float]] | None, optional): List of minimal values. Needs to be defined together with max_data. Defaults to None.
         max_data (List[float] | List[List[float]] | None, optional): List of maximal values. Needs to be defined together with min_data. Defaults to None.
         step (int | float): Step to highlighted in the graph (on the scale of the datacollector). Can also be a fraction, will be converted to an absolute step. Defaults to None (= no highlight).
+        max_step (int | float): Upper bound step for the graph (on the scale of the datacollector). Can also be a fraction, will be converted to an absolute step. Defaults to None (= all steps).
         title (Optional[str], optional): The title for the graph. Defaults to None.
         legend_titles (List[str], optional): The titles for the legends. Defaults to None.
         legend_colour_labels (List[str], optional): The colour labels for the legend. Defaults to None.
@@ -411,10 +442,10 @@ def plot_value(
     attributes = check_attributes(attributes)
 
     # Get the right data based on the supplied arguments
-    value_lists = get_value_lists(data, attributes, agent_filter)
+    value_lists = get_value_lists(data, attributes, agent_filter, max_step)
     num_groups = len(value_lists)
     # Check if min and max data are supplied correctly
-    _min_data, _max_data = check_min_max_data(data, min_data, max_data)
+    _min_data, _max_data = check_min_max_data(data, min_data, max_data, max_step)
 
     fig, ax = check_ax(ax, disable_title)
 
@@ -543,6 +574,7 @@ def plot_ratio(
     min_data: List[float] | List[List[float]] | None = None,
     max_data: List[float] | List[List[float]] | None = None,
     step: int | float | None = None,
+    max_step: int | float | None = None,
     title: Optional[str] = None,
     legend_titles: List[str] | None = None,
     legend_colour_labels: List[str] | None = None,
@@ -570,6 +602,7 @@ def plot_ratio(
         min_data (List[float] | List[List[float]] | None, optional): List of minimal values. Needs to be defined together with max_data. Defaults to None.
         max_data (List[float] | List[List[float]] | None, optional): List of maximal values. Needs to be defined together with min_data. Defaults to None.
         step (int | float): Step to highlighted in the graph (on the scale of the datacollector). Can also be a fraction, will be converted to an absolute step. Defaults to None (= no highlight).
+        max_step (int | float): Upper bound step for the graph (on the scale of the datacollector). Can also be a fraction, will be converted to an absolute step. Defaults to None (= all steps).
         title (Optional[str], optional): The title for the graph. Defaults to None.
         legend_titles (List[str], optional): The titles for the legends. Defaults to None.
         legend_colour_labels (List[str], optional): The colour labels for the legend. Defaults to None.
@@ -596,10 +629,10 @@ def plot_ratio(
         ]  # Convert single string to list for uniform processing
 
     # Get the right data based on the supplied arguments
-    value_lists = get_value_lists(data, attributes, agent_filter)
+    value_lists = get_value_lists(data, attributes, agent_filter, max_step)
     num_groups = len(value_lists)
     # Check if min and max data are supplied correctly
-    _min_data, _max_data = check_min_max_data(data, min_data, max_data)
+    _min_data, _max_data = check_min_max_data(data, min_data, max_data, max_step)
 
     fig, ax = check_ax(ax, disable_title)
 
@@ -769,6 +802,7 @@ def plot_histogram(
     legend_colours: List[str] | None = None,
     legend_styles: List[str] | None = None,
     aggregate_extension_x: Any = None,
+    max_step: int | float | None = None,
 ) -> Tuple[matplotlib.figure.Figure, matplotlib.axes.Axes]:
     """Plot a desired series of values from a model run
 
@@ -805,6 +839,7 @@ def plot_histogram(
     return (output_fig, ax)
 
 
+# TODO: max_steps supporten hier (idk hoe dit gebruikt wordt zelfs)
 def plot_error_bar(
     data: model.model.ContaminationModel | List[float] | List[List[float]],
     attributes: str | List[str],
@@ -952,6 +987,7 @@ def plot_error_bar(
     return (output_fig, ax)
 
 
+# TODO: zelfde als de andere error_bar
 def plot_error_bar_horizontal(
     data: model.model.ContaminationModel | List[float] | List[List[float]],
     attributes: str | List[str],
@@ -1093,6 +1129,7 @@ def plot_bar(
     y_label: Optional[str] = None,
     title: Optional[str] = None,
     disable_title: bool = False,
+    max_step: int | float | None = None,
 ) -> Tuple[matplotlib.figure.Figure, matplotlib.axes.Axes]:
     """Plot a bar chart with values from a model run
 
@@ -1155,6 +1192,7 @@ def plot_confusion(
     y_label: Optional[str] = None,
     title: Optional[str] = None,
     disable_title: bool = False,
+    max_step: int | float | None = None,
 ) -> Tuple[matplotlib.figure.Figure, matplotlib.axes.Axes]:
     """Plot a bar chart with values from a model run
 
