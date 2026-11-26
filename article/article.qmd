@@ -180,14 +180,14 @@ As we discussed earlier, computer simulations allow us to reason about causality
 | Parameter | Explanation | Values |
 | --- | --- | --- |
 | $\alpha$ | Probability of $T$. Probability of $C$ is $1 - \alpha$ | $0.2$, $0.4$, $0.5$, $0.6$, $0.8$ |
-| $\omega$| Probability of $TX$. Probability of $TY$ is $1 - \omega$ | $0.0$, $0.2$, $0.4$, $0.5$, $0.6$, $0.8$|
+| $\omega$| Probability of the chunk associated with $TX$ and $C$. Probability of the chunk associated with $TY$ is $1 - \omega$ | $0.0$, $0.2$, $0.4$, $0.5$, $0.6$, $0.8$|
 : An overview of all parameters in the simulation and their values, for the chunking-based model. {#tbl-chunking-parameters}
 
 Due to the probabilistic nature of the simulation, we tested every unique combination of parameters 100 times. In all model behaviour graphs in this article, we show an aggregation across these 100 runs for each combination. For each combination, we show the median, and the interquartile range Q1 and Q3.
 
-- Voorstelling model.
-- Resultaten.
-- Voorspelling: des te vaker een woord voorkomt in de C en des te minder vaak in T, des te vaker de -s wegvalt.
+@fig-chunking-contamination shows the evolution of the median entrenchment of the chunk associated with $TX$ and $C$, compared to the entrenchment of the chunk associated with construction $TY$, across all agents. Additionally, the different lines in the plot show the entrenchment course across different probabilities of $T$. We see that, as the probability of $T$ increases, contamination goes slower. The interpretation of this result is straightforward: in the chunking-based explanation, all occurrences of $C$ strengthen $TX$, because of the assumed shared chunk in the minds of speakers. When the probability of $T$ increases, agents use $C$ less, which means there are fewer opportunities for additionally strengthening the chunk associated with $C$ and $TX$. Notice as well that, even though we start with no entrenchment of the contamination chunk whatsoever (in @fig-chunking-contamination, $\omega = 0.0$), contamination occurs nonetheless. All other values for $\omega$ undergo the same evolutions as seen in @fig-chunking-contamination, just at higher starting points.
+
+![Evolution of the median entrenchment of the chunk associated with $TX$ and $C$, compared to the entrenchment of the chunk associated with construction $TY$, across all agents, for different probabilities of $T$. Parameter $\omega = 0.0$](figures/fig-chunking-contamination.png){#fig-chunking-contamination}
 
 ### Ambiguity-based model
 
