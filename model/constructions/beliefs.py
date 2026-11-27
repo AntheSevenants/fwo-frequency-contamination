@@ -118,3 +118,17 @@ class Beliefs:
         """
 
         return self.contamination_p[:, model.enums.Contamination.CONTAMINATED]
+
+    @property
+    def __cont_prob_a__(self):
+        return self.get_contamination_prob_for_construction_introspection(
+            model.enums.Construction.A, model.enums.Contamination.CONTAMINATED
+        )
+
+    @property
+    def __prob_a__(self):
+        return self.get_construction_prob_introspection(model.enums.Construction.A)
+
+    @property
+    def __prob_b__(self):
+        return self.get_construction_prob_introspection(model.enums.Construction.B)

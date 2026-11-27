@@ -260,9 +260,17 @@ graph_configs: Dict[str, GraphConfig | MosaicConfig] = {
         aggregate_extension=True,
         interactive_args=["step"],
     ),
+    "predictor_probs": GraphConfig(
+        reporter_name="predictor_probs",
+        plot_func=visualisation.contamination.plot_predictor_probs,
+        # agent_types=[model.enums.Group.GROUP_A, model.enums.Group.GROUP_B],
+        common_args=["x_scale_factor", "min_data", "max_data"],
+        aggregate_extension=True,
+        interactive_args=["step"],
+    ),
     "contamination_mosaic": MosaicConfig(
         layout=[
-            ["contamination", "entropy"],
+            ["contamination", "entropy", "predictor_probs"],
             ["ambiguity_avoidance_rate", "contamination_rate"],
         ],
         aggregate_extension=True,

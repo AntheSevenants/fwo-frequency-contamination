@@ -103,6 +103,21 @@ class Tracker:
 
         return self.compute_ratio(a_cont_count, b_none_count + a_cont_count)
 
+    @property
+    def __a_cont_prod_prob__(self) -> float:
+        return float(
+            self.get_property_median_across_agents("beliefs.__prob_a__")
+            * self.get_property_median_across_agents("beliefs.__cont_prob_a__")
+        )
+
+    @property
+    def __b_prob__(self) -> float:
+        return float(self.get_property_median_across_agents("beliefs.__prob_b__"))
+
+    @property
+    def __prediction_probs__(self) -> np.ndarray:
+        return np.array([self.__a_cont_prod_prob__, self.__b_prob__])
+
     def compute_ratio(self, numerator: int | float, denominator: int | float):
         if denominator == 0 or denominator == 0.0:
             return 0

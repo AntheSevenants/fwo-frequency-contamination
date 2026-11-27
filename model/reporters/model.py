@@ -63,6 +63,9 @@ model_reporters_base = {
     "confusion_matrix": ModelReporter(
         property_name="__confusion_matrix__", reporter_types=[ReporterType.AS_IS]
     ),
+    "prediction_probs": ModelReporter(
+        property_name="__prediction_probs__", reporter_types=[ReporterType.AS_IS]
+    ),
     "ambiguity_avoidance_rate": ModelReporter(
         property_name="__ambiguity_avoidance_rate__",
         reporter_types=[ReporterType.AS_IS],

@@ -81,3 +81,27 @@ def plot_contamination_rate(
         title="Mean contamination rate per construction across agents",
         **kwargs,
     )
+
+
+def plot_predictor_probs(
+    data: Union[model.model.ContaminationModel, List[List[float]]],
+    attributes: str | List[str] = "predictor_probs",
+    **kwargs: Any,
+) -> Tuple[matplotlib.figure.Figure, matplotlib.axes.Axes]:
+    """Plot the median contamination key predictor probabilities, from the agents' minds.
+
+    Args:
+        data (Union[model.model.ContaminationModel, List[List[float]]): Either a model instance or a list of values.
+        attributes (str | List[str]): The column to fetch data from. Always supply, even if input data is not a model, so dimensionality of the data can be assessed. Defaults to "predictor_probs".
+        **kwargs: Additional keyword arguments passed to parent plotting function.
+
+    Returns:
+        Tuple[matplotlib.figure.Figure, matplotlib.axes.Axes]: The finished graph
+    """
+
+    return visualisation.core.plot_ratio(
+        data,
+        attributes,
+        title="Predictor probabilities across agents",
+        **kwargs,
+    )
