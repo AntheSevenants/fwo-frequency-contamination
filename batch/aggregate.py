@@ -129,6 +129,7 @@ class AggregateColumnConfig:
 
 
 aggregate_column_configs = {
+    "prediction_probs": AggregateColumnConfig(data_column="prediction_probs"),
     "contamination_mean": AggregateColumnConfig(data_column="contamination_mean"),
     "contamination_median": AggregateColumnConfig(data_column="contamination_median"),
     "ambiguity_avoidance_rate": AggregateColumnConfig(

@@ -96,6 +96,7 @@ class GraphConfig:
                         reporter_name, self.reporter_type
                     )
                 ]
+            print(self.data_columns)
             return
 
         for reporter_name in reporter_names:
@@ -260,9 +261,11 @@ graph_configs: Dict[str, GraphConfig | MosaicConfig] = {
         aggregate_extension=True,
         interactive_args=["step"],
     ),
-    "predictor_probs": GraphConfig(
-        reporter_name="predictor_probs",
+    "prediction_probs": GraphConfig(
+        reporter_name="prediction_probs",
+        model_reporter=True,
         plot_func=visualisation.contamination.plot_predictor_probs,
+        reporter_type=model.reporters.model.ReporterType.AS_IS,
         # agent_types=[model.enums.Group.GROUP_A, model.enums.Group.GROUP_B],
         common_args=["x_scale_factor", "min_data", "max_data"],
         aggregate_extension=True,
@@ -270,11 +273,11 @@ graph_configs: Dict[str, GraphConfig | MosaicConfig] = {
     ),
     "contamination_mosaic": MosaicConfig(
         layout=[
-            ["contamination", "entropy", "predictor_probs"],
+            ["contamination", "entropy", "prediction_probs"],
             ["ambiguity_avoidance_rate", "contamination_rate"],
         ],
         aggregate_extension=True,
-        size=(12, 12),
+        size=(18, 12),
     ),
     "communicative_confusion": GraphConfig(
         context=GraphContext.ANY,
